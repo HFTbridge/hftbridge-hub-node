@@ -1,0 +1,2 @@
+# hftbridge-hub-node
+node
