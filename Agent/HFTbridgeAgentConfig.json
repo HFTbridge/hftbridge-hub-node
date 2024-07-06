@@ -1,0 +1,9 @@
+{
+    "HubHost": "http://localhost:5242",
+    "AgentSecretKey": "C839BBC66271C988E72C6372D9D99",
+    "AgentId": "fvbdUf3UzPxO3LDCHloL",
+    "LogDisplayHeartbeat" : false,
+    "LogDisplayMarketData" : false,
+    "LogDisplayLatencyGapTick" : false,
+    "LogDisplayLatencyGapOffset" : false
+}
