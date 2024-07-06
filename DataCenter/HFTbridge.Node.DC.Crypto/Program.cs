@@ -17,10 +17,13 @@ class Program
     private const string NODE_SECRET = "B396A51A5D3EDA7CBB2B7FF8A662F";
     private const string NODE_ID = "CRYPTO";
     private const string URL_SERVICE = "https://hub.dc.hft-app.net";
-    private const string URL_FORMAT = "{0}/node-mothership?id={1}&version={2}&schemaVersion={3}&shareNodeVersion={4}&secret={5}&organizationId={6}";
+    private const string URL_FORMAT = "{0}/node-mothership?nodeId={1}&version={2}&schemaVersion={3}&sharedNodeVersion={4}&secret={5}&organizationId={6}";
     // private const string URL_HUB = "http://localhost:5242";
 
     private static string MothershipURL = $"{string.Format(URL_FORMAT, URL_SERVICE, NODE_ID, Version, SchemaVersion, SharedNodeVersion, NODE_SECRET, NODE_ORGANIZATION_ID)}";
+
+
+    private const string URL_AGENT_TEST= "https://hub.dc.hft-app.net/node-mothership?agentId=1";
 
     static async Task Main(string[] args)
     {
@@ -58,6 +61,7 @@ class Program
 
     private static HubConnection BuildHubClient(string urlFormat)
     {
+        Console.WriteLine(MothershipURL);
         var hubClient = new HubConnectionBuilder()
             .WithUrl(MothershipURL, options =>
             {
