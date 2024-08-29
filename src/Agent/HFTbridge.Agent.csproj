@@ -2,10 +2,15 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net8.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
+     <TargetFramework>net8.0</TargetFramework>
     <Nullable>disable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>preview</LangVersion>
+    <PublishSingleFile>true</PublishSingleFile>
+    <SelfContained>true</SelfContained>
+    <Version>1.0.0.2</Version>
   </PropertyGroup>
+
 
   <ItemGroup>
     <PackageReference Include="MessagePack" Version="2.5.129" />
@@ -17,17 +22,19 @@
     <PackageReference Include="Serilog.Extensions.Logging" Version="7.0.0" />
     <PackageReference Include="Serilog.Sinks.Console" Version="4.1.0" />
     <PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
+        <PackageReference Include="RabbitMQ.Client" Version="6.5.0" />
   </ItemGroup>
 
-  <ItemGroup>
+  <!-- <ItemGroup>
     <EmbeddedResource Include="HFTbridgeAgentConfig.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
   </ItemGroup>
-  
+   -->
   <ItemGroup>
-    <!-- <ProjectReference Include="..\HFTbridge.Engine\HFTbridge.Engine.csproj" />
-    <ProjectReference Include="..\Shared\HFTbridge.Agent.Messages\HFTbridge.Agent.Messages.csproj" /> -->
+    <!-- <ProjectReference Include="..\HFTbridge.Engine\HFTbridge.Engine.csproj" /> -->
+    <ProjectReference Include="..\..\shared\HFTbridge.Node.Shared\HFTbridge.Node.Shared.csproj" />
+    <ProjectReference Include="..\..\shared\HFTbridge.Node.Msg\HFTbridge.Node.Msg.csproj" />
   </ItemGroup>
 
 

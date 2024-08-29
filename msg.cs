@@ -9,7 +9,7 @@ namespace HFTbridge.Msg;
 
 public static class MsgSchema
 {
-    public static int Version = 21;
+    public static int Version = 19;
 
 //--------------------------------------------------------------------------------------------------------------------------------------------
 //------[ DECODE MESSAGE FROM RABBIT MQ LIBRARAY  ]
@@ -659,32 +659,6 @@ public record struct MsgSnapshotGroupDCNodes(
     [property: Key(1)] MsgSnapshotSingleDCNode[] Nodes
 );
     
-[MessagePackObject]
-public record struct MsgSnapshotFullSingleAgentNode(
-    [property: Key(0)] long Ts,
-    [property: Key(1)] string OrganizationId,
-    [property: Key(2)] string NodeId,
-    [property: Key(3)] string OperatingSystem,
-    [property: Key(4)] string CountryCode,
-    [property: Key(5)] List<SubMsgSnapshotFullSingleAgentNodeTC> ConnectedAccounts
-);
-
-[MessagePackObject]
-public record struct SubMsgSnapshotFullSingleAgentNodeTC(
-    [property: Key(0)] string OrganizationId,
-    [property: Key(1)] string TradingAccountId,
-    [property: Key(2)] string ConnectionStatus,
-    [property: Key(3)] double Balance,
-    [property: Key(4)] double Equity,
-    [property: Key(5)] double PingMs,
-    [property: Key(6)] int StreamingSymbols,
-    [property: Key(7)] int TpsAccount,
-    [property: Key(8)] int TpmAccount,
-    [property: Key(9)] int OpenedTradesCount,
-    [property: Key(10)] int ErrorCount,
-    [property: Key(11)] long ConnectedAtTs
-);
-    
 
 //--------------------------------------------------------------------------------------------------------------------------------------------
 //------[ MESSAGE EVENT GATEWAY WITH HANDLERS ON ALREADY DECODED EVENTS AND SEND FUNCTIONS TO PUBLISH EVENTS ]
@@ -722,11 +696,6 @@ public class EventGateway
     }
 
     public event Action<RabbitMsgWrapper> OnNewMsg;
-
-    public void Send(RabbitMsgWrapper msg)
-    {
-        _publisher.Publish(msg);
-    }
 
     
     public event Action<RabbitMsgWrapper, MsgRegisterMicroService> EventMsgRegisterMicroService;
@@ -779,7 +748,6 @@ public class EventGateway
     public event Action<RabbitMsgWrapper, MsgSnapshotDCNodesSlim> EventMsgSnapshotDCNodesSlim;
     public event Action<RabbitMsgWrapper, MsgSnapshotSingleDCNode> EventMsgSnapshotSingleDCNode;
     public event Action<RabbitMsgWrapper, MsgSnapshotGroupDCNodes> EventMsgSnapshotGroupDCNodes;
-    public event Action<RabbitMsgWrapper, MsgSnapshotFullSingleAgentNode> EventMsgSnapshotFullSingleAgentNode;
 
     
     public string Send(MsgRegisterMicroService @event,
@@ -2482,40 +2450,6 @@ public class EventGateway
         return msg.ActionId;
     }
     
-    public string Send(MsgSnapshotFullSingleAgentNode @event,
-        long? ts = null,
-        string severity = null,
-        string actionId = null,
-        string organizationId = null,
-        string userId = null,
-        string nodeId = null,
-        string userEmail = null
-    )
-    {
-        var msg = new RabbitMsgWrapper()
-        {
-            Ts = ts ?? DateTime.UtcNow.Ticks,
-            Severity = severity ?? "Information",
-            ActionId = actionId ?? Guid.NewGuid().ToString(),
-            Exchange = "exchange.snapshot.notification",
-            MessageType = "MsgSnapshotFullSingleAgentNode",
-            ByteMsg = MessagePackSerializer.Serialize(@event),
-            OrganizationId = organizationId ?? "System",
-            UserId = userId ?? "System",
-            NodeId = nodeId ?? "System",
-            UserEmail = userEmail ?? "System",
-
-            AppName = _eventGatewayConfiguration.ServiceName,
-            AppVersion = _eventGatewayConfiguration.ServiceVersion,
-            SharedVersion = _eventGatewayConfiguration.ServiceSharedVersion,
-            SchemaVersion = MsgSchema.Version.ToString()
-        };
-
-        _publisher.Publish(msg);
-        Console.WriteLine("Sent MsgSnapshotFullSingleAgentNode " + msg.ToString());
-        return msg.ActionId;
-    }
-    
 
     public void Receive(BasicDeliverEventArgs args)
     {
@@ -2874,13 +2808,6 @@ public class EventGateway
         {
             EventMsgSnapshotGroupDCNodes?.Invoke(msg, MessagePackSerializer.Deserialize<MsgSnapshotGroupDCNodes>(msg.ByteMsg));
             Console.WriteLine("Received MsgSnapshotGroupDCNodes " + msg.ToString());
-            return;
-        }
-    
-        if (msg.MessageType == "MsgSnapshotFullSingleAgentNode")
-        {
-            EventMsgSnapshotFullSingleAgentNode?.Invoke(msg, MessagePackSerializer.Deserialize<MsgSnapshotFullSingleAgentNode>(msg.ByteMsg));
-            Console.WriteLine("Received MsgSnapshotFullSingleAgentNode " + msg.ToString());
             return;
         }
     
