@@ -6,7 +6,8 @@ namespace HFTbridge.Node.Agent
     {
         static async Task Main(string[] args)
         {
-            var mothershipService = new MothershipService("https://hub.agent.hft-app.net", "MIKE-DEV", "PUBLIC");
+
+            var mothershipService = new MothershipService("https://hub.agent.hft-app.net", "MIKE-DEV", "PUBLIC", new SyncWorkerHandler());
             var handler = new MsgHandler(mothershipService._eventGateway);
             mothershipService.Start();
 

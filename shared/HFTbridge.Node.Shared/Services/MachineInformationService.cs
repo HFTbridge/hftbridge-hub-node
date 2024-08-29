@@ -6,15 +6,23 @@ using Hardware.Info;
 
 namespace HFTbridge.Node.Shared.Services
 {
-
     public class MachineInformationService
     {
-        public HardwareInfo Data {get;set;}
+        public HardwareInfo Data { get; set; }
+
         public MachineInformationService()
         {
             Data = new HardwareInfo();
-            Data.RefreshAll();
-            Log.Logger.Debug("Machine information loaded: {@data}", Data);
+
+            try
+            {
+                Data.RefreshAll();
+                Log.Logger.Debug("Machine information loaded: {@data}", Data);
+            }
+            catch (Exception ex)
+            {
+                Log.Logger.Error(ex, "Failed to refresh machine information in the constructor.");
+            }
         }
 
         public string GetHardwareInformationJson()
@@ -41,8 +49,6 @@ namespace HFTbridge.Node.Shared.Services
 
             return json;
         }
-
-       
     }
 
     public class IPAddressConverter : JsonConverter<IPAddress>

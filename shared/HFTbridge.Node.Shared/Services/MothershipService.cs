@@ -50,15 +50,17 @@ namespace HFTbridge.Node.Shared.Services
         private readonly GeoLocationService _geoLocationService;
         private readonly MachineInformationService _machineInformationService;
         private readonly SyncWorker _syncWorker;
+        private readonly ISyncWorkerHandler _syncWorkerHandler;
 
-        public MothershipService(string url, string nodeId, string organizationId)
+        public MothershipService(string url, string nodeId, string organizationId, ISyncWorkerHandler syncWorkerHandler)
         {
             ConfigureLogger();
             _geoLocationService = new GeoLocationService();
             _machineInformationService = new MachineInformationService();
             _eventGateway = new EventGateway(this, new EventGatewayConfiguration("AGENT-HUB", Version, SharedNodeVersion ));
 
-            _syncWorker = new SyncWorker(_eventGateway);
+            _syncWorkerHandler = syncWorkerHandler;
+            _syncWorker = new SyncWorker(_eventGateway, syncWorkerHandler);
 
             NODE_ORGANIZATION_ID = organizationId;
             NODE_ID = nodeId;

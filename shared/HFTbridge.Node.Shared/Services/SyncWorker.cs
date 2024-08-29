@@ -9,15 +9,28 @@ namespace HFTbridge.Node.Shared.Services
 
         private readonly  EventGateway _eventGateway;
 
-        public SyncWorker(EventGateway eventGateway)
+        private readonly ISyncWorkerHandler _syncWorkerHandler;
+        
+
+        public SyncWorker(EventGateway eventGateway, ISyncWorkerHandler syncWorkerHandler)
         {
+            _syncWorkerHandler = syncWorkerHandler;
             _eventGateway = eventGateway;
             _timer = new Timer(TimerCallback, null, 0, 1000);
         }
 
         private void TimerCallback(object state)
         {
-            Console.WriteLine("Message logged at: " + DateTime.Now);
+            try
+            {
+                _syncWorkerHandler.OnEverySecond(_eventGateway);
+            }
+            catch (System.Exception e)
+            {
+                
+                Log.Logger.Error("Faile to send full snapshot !!! {@msg}", e.Message);
+            }
+            
         }
     }
 }

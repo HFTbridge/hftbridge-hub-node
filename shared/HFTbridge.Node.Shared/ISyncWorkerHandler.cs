@@ -2,6 +2,6 @@ namespace HFTbridge.Node.Shared
 {
     public interface ISyncWorkerHandler
     {
-        public void OnEverySecond();
+        public void OnEverySecond(EventGateway eventGateway);
     }
 }
