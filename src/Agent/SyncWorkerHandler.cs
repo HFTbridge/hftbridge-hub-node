@@ -6,55 +6,36 @@ namespace HFTbridge.Node.Agent
 {
     public class SyncWorkerHandler : ISyncWorkerHandler
     {
-        public void OnEverySecond(EventGateway eventGateway)
+        private readonly string _organizationId;
+        private readonly string _nodeId;
+        private readonly HFTBridgeEngine _engine;
+
+        public SyncWorkerHandler(string organizationId, string nodeId, HFTBridgeEngine engine )
         {
+            _engine = engine;
+            _organizationId = organizationId;
+            _nodeId = nodeId;
+        }
+        public void OnEverySecond(EventGateway eventGateway, string os, string countryCode)
+        {
+
             // Create dummy data
-            var connectedAccounts = new List<SubMsgSnapshotFullSingleAgentNodeTC>
-            {
-                new SubMsgSnapshotFullSingleAgentNodeTC(
-                    OrganizationId: "Org123",
-                    TradingAccountId: "TAC001",
-                    ConnectionStatus: "Active",
-                    Balance: 1500.75,
-                    Equity: 1600.50,
-                    PingMs: 23.4,
-                    StreamingSymbols: 50,
-                    TpsAccount: 200,
-                    TpmAccount: 500,
-                    OpenedTradesCount: 10,
-                    ErrorCount: 2,
-                    ConnectedAtTs: DateTimeOffset.UtcNow.ToUnixTimeSeconds()
-                ),
-                new SubMsgSnapshotFullSingleAgentNodeTC(
-                    OrganizationId: "Org123",
-                    TradingAccountId: "TAC002",
-                    ConnectionStatus: "Inactive",
-                    Balance: 200.00,
-                    Equity: 300.00,
-                    PingMs: 50.1,
-                    StreamingSymbols: 30,
-                    TpsAccount: 150,
-                    TpmAccount: 300,
-                    OpenedTradesCount: 5,
-                    ErrorCount: 1,
-                    ConnectedAtTs: DateTimeOffset.UtcNow.ToUnixTimeSeconds() - 3600 // 1 hour ago
-                )
-            };
+            var connectedAccounts = _engine.GetConnectionRecords();
         
 
             var snapshot = new MsgSnapshotFullSingleAgentNode(
                 Ts: DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
-                OrganizationId: "Org123",
-                NodeId: "Node456",
-                OperatingSystem: "Windows 10",
-                CountryCode: "US",
+                OrganizationId: _organizationId,
+                NodeId: _nodeId,
+                OperatingSystem: os,
+                CountryCode: countryCode,
                 ConnectedAccounts: connectedAccounts
             );
 
             eventGateway.Send(snapshot, 
-                organizationId:"Public",
+                organizationId:_organizationId,
                 severity:"Debug",
-                nodeId:"MIKE-DEV"
+                nodeId:_nodeId
             );
         }
     }

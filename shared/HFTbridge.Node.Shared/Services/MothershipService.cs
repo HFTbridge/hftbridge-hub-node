@@ -60,7 +60,7 @@ namespace HFTbridge.Node.Shared.Services
             _eventGateway = new EventGateway(this, new EventGatewayConfiguration("AGENT-HUB", Version, SharedNodeVersion ));
 
             _syncWorkerHandler = syncWorkerHandler;
-            _syncWorker = new SyncWorker(_eventGateway, syncWorkerHandler);
+            _syncWorker = new SyncWorker(_eventGateway, syncWorkerHandler, _machineInformationService.Data.OperatingSystem.Name, _geoLocationService.Data.country );
 
             NODE_ORGANIZATION_ID = organizationId;
             NODE_ID = nodeId;

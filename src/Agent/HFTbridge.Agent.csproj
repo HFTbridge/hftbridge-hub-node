@@ -42,4 +42,12 @@
     <PackageReference Include="Disruptor" Version="5.0.0" />
   </ItemGroup>
 
+    <ItemGroup>
+    <Reference Include="HFTbridge.TCLIB.dll">
+      <HintPath>HFTbridge.TCLIB.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
+  </ItemGroup>
+
+
 </Project>

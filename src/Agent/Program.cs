@@ -1,4 +1,6 @@
 ﻿using HFTbridge.Node.Shared.Services;
+using HFTbridge.Msg;
+using HFTbridge.TCLIB;
 
 namespace HFTbridge.Node.Agent
 {
@@ -6,9 +8,15 @@ namespace HFTbridge.Node.Agent
     {
         static async Task Main(string[] args)
         {
+            var organizationId = "PUBLIC";
+            var nodeId = "MIKE-DEV";
 
-            var mothershipService = new MothershipService("https://hub.agent.hft-app.net", "MIKE-DEV", "PUBLIC", new SyncWorkerHandler());
-            var handler = new MsgHandler(mothershipService._eventGateway);
+            var engine = new HFTBridgeEngine();
+            
+            var mothershipService = new MothershipService("https://hub.agent.hft-app.net", nodeId, organizationId, new SyncWorkerHandler(organizationId, nodeId, engine));
+
+         
+            var handler = new MsgHandler(mothershipService._eventGateway, engine);
             mothershipService.Start();
 
 

@@ -10,10 +10,15 @@ namespace HFTbridge.Node.Shared.Services
         private readonly  EventGateway _eventGateway;
 
         private readonly ISyncWorkerHandler _syncWorkerHandler;
+
+        private readonly string _os;
+        private readonly string _countryCode;
         
 
-        public SyncWorker(EventGateway eventGateway, ISyncWorkerHandler syncWorkerHandler)
+        public SyncWorker(EventGateway eventGateway, ISyncWorkerHandler syncWorkerHandler, string os, string countryCode)
         {
+            _os = os;
+            _countryCode = countryCode;
             _syncWorkerHandler = syncWorkerHandler;
             _eventGateway = eventGateway;
             _timer = new Timer(TimerCallback, null, 0, 1000);
@@ -23,7 +28,7 @@ namespace HFTbridge.Node.Shared.Services
         {
             try
             {
-                _syncWorkerHandler.OnEverySecond(_eventGateway);
+                _syncWorkerHandler.OnEverySecond(_eventGateway, _os, _countryCode);
             }
             catch (System.Exception e)
             {

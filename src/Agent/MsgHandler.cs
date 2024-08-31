@@ -6,8 +6,10 @@ namespace HFTbridge.Node.Agent
     public class MsgHandler
     {
         private EventGateway _eventGateway;
-        public MsgHandler(EventGateway eventGateway)
+        private readonly HFTBridgeEngine _engine;
+        public MsgHandler(EventGateway eventGateway, HFTBridgeEngine engine)
         {
+            _engine = engine;
             _eventGateway = eventGateway;
             _eventGateway.EventMsgStartTradingAccount += HandleMsg;
             _eventGateway.EventMsgStopTradingAccount += HandleMsg;
@@ -19,43 +21,93 @@ namespace HFTbridge.Node.Agent
         // Handlers
         private void HandleMsg (RabbitMsgWrapper msg, MsgStartTradingAccount @event)
         {
-            var response = new MsgStartTradingAccountResponse()
+            try
             {
-                Ts = DateTime.UtcNow.Ticks,
-                ServiceName = "fefefe",
-                ServiceUrl = "efwfewfw",
-                ServiceVersion = "hbfewbifwefbw",
-            };
+                var response = new MsgStartTradingAccountResponse()
+                {
+                    Ts = DateTime.UtcNow.Ticks,
+                    ServiceName = "fefefe",
+                    ServiceUrl = "efwfewfw",
+                    ServiceVersion = "hbfewbifwefbw",
+                };
 
-            _eventGateway.Send(response, 
-                organizationId:msg.OrganizationId,
-                severity:"Warning",
-                actionId:msg.ActionId,
-                userId:msg.UserId,
-                nodeId:msg.NodeId,
-                userEmail:msg.UserEmail
-            );
+                _engine.Connect(@event, msg.OrganizationId, msg.UserId);
+
+                _eventGateway.Send(response, 
+                    organizationId:msg.OrganizationId,
+                    severity:"Warning",
+                    actionId:msg.ActionId,
+                    userId:msg.UserId,
+                    nodeId:msg.NodeId,
+                    userEmail:msg.UserEmail
+                );
+            }
+            catch (System.Exception e)
+            {
+                var response = new MsgStartTradingAccountResponse()
+                {
+                    Ts = DateTime.UtcNow.Ticks,
+                    ServiceName = "fefefe",
+                    ServiceUrl = "efwfewfw",
+                    ServiceVersion = "hbfewbifwefbw",
+                };
+
+                _eventGateway.Send(response, 
+                    organizationId:msg.OrganizationId,
+                    severity:"Warning",
+                    actionId:msg.ActionId,
+                    userId:msg.UserId,
+                    nodeId:msg.NodeId,
+                    userEmail:msg.UserEmail
+                );
+            }
+
             
         }
 
         private void HandleMsg (RabbitMsgWrapper msg, MsgStopTradingAccount @event)
         {
-            var response = new MsgStopTradingAccountResponse()
+            try
             {
-                Ts = DateTime.UtcNow.Ticks,
-                ServiceName = "fefefe",
-                ServiceUrl = "efwfewfw",
-                ServiceVersion = "hbfewbifwefbw",
-            };
+                var response = new MsgStopTradingAccountResponse()
+                {
+                    Ts = DateTime.UtcNow.Ticks,
+                    ServiceName = "fefefe",
+                    ServiceUrl = "efwfewfw",
+                    ServiceVersion = "hbfewbifwefbw",
+                };
+                
+                _engine.Disconnect(@event, msg.OrganizationId, msg.UserId);
+
+                _eventGateway.Send(response, 
+                    organizationId:msg.OrganizationId,
+                    severity:"Warning",
+                    actionId:msg.ActionId,
+                    userId:msg.UserId,
+                    nodeId:msg.NodeId,
+                    userEmail:msg.UserEmail
+                );
+            }
+            catch (System.Exception e)
+            {
+                var response = new MsgStopTradingAccountResponse()
+                {
+                    Ts = DateTime.UtcNow.Ticks,
+                    ServiceName = "fefefe",
+                    ServiceUrl = "efwfewfw",
+                    ServiceVersion = "hbfewbifwefbw",
+                };
+                
+                _eventGateway.Send(response, 
+                    organizationId:msg.OrganizationId,
+                    severity:"Warning",
+                    actionId:msg.ActionId,
+                    userId:msg.UserId,
+                    nodeId:msg.NodeId,
+                    userEmail:msg.UserEmail
+                );
+            }
             
-            _eventGateway.Send(response, 
-                organizationId:msg.OrganizationId,
-                severity:"Warning",
-                actionId:msg.ActionId,
-                userId:msg.UserId,
-                nodeId:msg.NodeId,
-                userEmail:msg.UserEmail
-            );
             
         }
 
