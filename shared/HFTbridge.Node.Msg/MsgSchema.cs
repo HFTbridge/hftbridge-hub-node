@@ -9,7 +9,7 @@ namespace HFTbridge.Msg;
 
 public static class MsgSchema
 {
-    public static int Version = 21;
+    public static int Version = 23;
 
 //--------------------------------------------------------------------------------------------------------------------------------------------
 //------[ DECODE MESSAGE FROM RABBIT MQ LIBRARAY  ]
@@ -245,9 +245,10 @@ public record struct MsgStartTradingAccount(
     [property: Key(0)] long Ts,
     [property: Key(1)] string TradingAccountId,
     [property: Key(2)] string TradingAccountProvider,
-    [property: Key(3)] string TradingAccountConnectionString,
-    [property: Key(4)] long LastConnectionTs,
-    [property: Key(5)] SubMsgStartTradingAccountSubscribeItem[] Subscribe
+    [property: Key(3)] int BrokerId,
+    [property: Key(4)] string TradingAccountConnectionString,
+    [property: Key(5)] long LastConnectionTs,
+    [property: Key(6)] SubMsgStartTradingAccountSubscribeItem[] Subscribe
 );
 
 [MessagePackObject]
@@ -292,36 +293,48 @@ public record struct MsgOpenTradeManual(
 [MessagePackObject]
 public record struct MsgStartTradingAccountResponse(
     [property: Key(0)] long Ts,
-    [property: Key(1)] string ServiceName,
-    [property: Key(2)] string ServiceUrl,
-    [property: Key(3)] string ServiceVersion
+    [property: Key(1)] string TradingAccountId,
+    [property: Key(2)] string TradingAccountProvider,
+    [property: Key(3)] int BrokerId,
+    [property: Key(4)] string Message,
+    [property: Key(5)] string[] SubscribedSymbolKeys,
+    [property: Key(6)] string[] FailedToSubscribeSymbolKeys
 );
     
 
 [MessagePackObject]
 public record struct MsgStopTradingAccountResponse(
     [property: Key(0)] long Ts,
-    [property: Key(1)] string ServiceName,
-    [property: Key(2)] string ServiceUrl,
-    [property: Key(3)] string ServiceVersion
+    [property: Key(1)] string TradingAccountId,
+    [property: Key(2)] string TradingAccountProvider,
+    [property: Key(3)] int BrokerId,
+    [property: Key(4)] string Message
 );
     
 
 [MessagePackObject]
 public record struct MsgSubscribeSymbolResponse(
     [property: Key(0)] long Ts,
-    [property: Key(1)] string ServiceName,
-    [property: Key(2)] string ServiceUrl,
-    [property: Key(3)] string ServiceVersion
+    [property: Key(1)] string TradingAccountId,
+    [property: Key(2)] string TradingAccountProvider,
+    [property: Key(3)] int BrokerId,
+    [property: Key(4)] string SymbolKey,
+    [property: Key(5)] string SymbolRouting,
+    [property: Key(6)] int Digits,
+    [property: Key(7)] string Message
 );
     
 
 [MessagePackObject]
 public record struct MsgUnSubscribeSymbolResponse(
     [property: Key(0)] long Ts,
-    [property: Key(1)] string ServiceName,
-    [property: Key(2)] string ServiceUrl,
-    [property: Key(3)] string ServiceVersion
+    [property: Key(1)] string TradingAccountId,
+    [property: Key(2)] string TradingAccountProvider,
+    [property: Key(3)] int BrokerId,
+    [property: Key(4)] string SymbolKey,
+    [property: Key(5)] string SymbolRouting,
+    [property: Key(6)] int Digits,
+    [property: Key(7)] string Message
 );
     
 
@@ -374,10 +387,39 @@ public record struct SubMsgMDSnapshotItem(
 
 [MessagePackObject]
 public record struct MsgMDRouting(
+    [property: Key(0)] long IncomingTickTs,
+    [property: Key(1)] long ProcessedTickTs,
+    [property: Key(2)] double ProcessingMs,
+    [property: Key(3)] string SymbolKey,
+    [property: Key(4)] string SymbolRouting,
+    [property: Key(5)] int Digits,
+    [property: Key(6)] double Ask,
+    [property: Key(7)] double Bid,
+    [property: Key(8)] double AveragePrice,
+    [property: Key(9)] double Spread,
+    [property: Key(10)] SubMsgMDRoutingItem[] TradingConnectionQuotes
+);
+
+[MessagePackObject]
+public record struct SubMsgMDRoutingItem(
     [property: Key(0)] long Ts,
-    [property: Key(1)] string ServiceName,
-    [property: Key(2)] string ServiceUrl,
-    [property: Key(3)] string ServiceVersion
+    [property: Key(1)] string OrganizationId,
+    [property: Key(2)] string TradingAccountId,
+    [property: Key(3)] string SymbolKey,
+    [property: Key(4)] string SymbolRouting,
+    [property: Key(5)] int Digits,
+    [property: Key(6)] double Ask,
+    [property: Key(7)] double Bid,
+    [property: Key(8)] double AveragePrice,
+    [property: Key(9)] double Spread,
+    [property: Key(10)] double AskOffset,
+    [property: Key(11)] double BidOffset,
+    [property: Key(12)] double AskAfterOffset,
+    [property: Key(13)] double BidAfterOffset,
+    [property: Key(14)] double BuyGap,
+    [property: Key(15)] double SellGap,
+    [property: Key(16)] bool IsBuyGap,
+    [property: Key(17)] bool IsSellGap
 );
     
 
@@ -685,6 +727,67 @@ public record struct SubMsgSnapshotFullSingleAgentNodeTC(
     [property: Key(11)] long ConnectedAtTs
 );
     
+[MessagePackObject]
+public record struct MsgTCLog(
+    [property: Key(0)] long Ts,
+    [property: Key(1)] string TradingAccountId,
+    [property: Key(2)] int Severity,
+    [property: Key(3)] string Message
+);
+    
+[MessagePackObject]
+public record struct MsgSnapshotSingleAgentLiveTrades(
+    [property: Key(0)] long Ts,
+    [property: Key(1)] double TotalPnL,
+    [property: Key(2)] int TradesCount,
+    [property: Key(3)] string NodeId,
+    [property: Key(4)] List<SubMsgSnapshotSingleAgentLiveTradesItem> Trades
+);
+
+[MessagePackObject]
+public record struct SubMsgSnapshotSingleAgentLiveTradesItem(
+    [property: Key(0)] long TradeOpenedTs,    
+    [property: Key(1)] string OrganizationId,
+    [property: Key(2)] string TradingAccountId,
+    [property: Key(1)] string TradeId,
+    [property: Key(2)] string TradeTicket,
+    [property: Key(3)] string Direction,
+    [property: Key(4)] string SymbolKey,
+    [property: Key(6)] int Digits,
+    [property: Key(7)] double OpenPrice,
+    [property: Key(8)] double PnL,
+    [property: Key(9)] double TP,
+    [property: Key(10)] double SL
+);
+    
+[MessagePackObject]
+public record struct MsgSnapshotSingleAgentMarketData(
+    [property: Key(0)] long Ts,
+    [property: Key(1)] int TotalTps,
+    [property: Key(2)] int SymbolsCount,
+    [property: Key(3)] string NodeId,
+    [property: Key(4)] List<SubMsgSnapshotSingleAgentMarketDataQuote> Quotes
+);
+
+[MessagePackObject]
+public record struct SubMsgSnapshotSingleAgentMarketDataQuote(
+    [property: Key(0)] long Ts,
+    [property: Key(1)] long TickNumber,
+    [property: Key(2)] string OrganizationId,
+    [property: Key(3)] string TradingAccountId,
+    [property: Key(4)] string SymbolKey,
+    [property: Key(5)] string SymbolRouting,
+    [property: Key(6)] int Digits,
+    [property: Key(7)] double Ask,
+    [property: Key(8)] double Bid,
+    [property: Key(9)] double AveragePrice,
+    [property: Key(10)] double Spread,
+    [property: Key(11)] int Tps,
+    [property: Key(12)] int Tpm,
+    [property: Key(13)] double Delta1M,
+    [property: Key(14)] double Delta5M
+);
+    
 
 //--------------------------------------------------------------------------------------------------------------------------------------------
 //------[ MESSAGE EVENT GATEWAY WITH HANDLERS ON ALREADY DECODED EVENTS AND SEND FUNCTIONS TO PUBLISH EVENTS ]
@@ -780,6 +883,9 @@ public class EventGateway
     public event Action<RabbitMsgWrapper, MsgSnapshotSingleDCNode> EventMsgSnapshotSingleDCNode;
     public event Action<RabbitMsgWrapper, MsgSnapshotGroupDCNodes> EventMsgSnapshotGroupDCNodes;
     public event Action<RabbitMsgWrapper, MsgSnapshotFullSingleAgentNode> EventMsgSnapshotFullSingleAgentNode;
+    public event Action<RabbitMsgWrapper, MsgTCLog> EventMsgTCLog;
+    public event Action<RabbitMsgWrapper, MsgSnapshotSingleAgentLiveTrades> EventMsgSnapshotSingleAgentLiveTrades;
+    public event Action<RabbitMsgWrapper, MsgSnapshotSingleAgentMarketData> EventMsgSnapshotSingleAgentMarketData;
 
     
     public string Send(MsgRegisterMicroService @event,
@@ -812,7 +918,7 @@ public class EventGateway
         };
 
         _publisher.Publish(msg);
-        Console.WriteLine("Sent MsgRegisterMicroService " + msg.ToString());
+        //Console.WriteLine("Sent MsgRegisterMicroService " + msg.ToString());
         return msg.ActionId;
     }
     
@@ -846,7 +952,7 @@ public class EventGateway
         };
 
         _publisher.Publish(msg);
-        Console.WriteLine("Sent MsgMicroServiceHealthSummaryRequest " + msg.ToString());
+        //Console.WriteLine("Sent MsgMicroServiceHealthSummaryRequest " + msg.ToString());
         return msg.ActionId;
     }
     
@@ -880,7 +986,7 @@ public class EventGateway
         };
 
         _publisher.Publish(msg);
-        Console.WriteLine("Sent MsgMicroServiceHealthSummaryNotification " + msg.ToString());
+        //Console.WriteLine("Sent MsgMicroServiceHealthSummaryNotification " + msg.ToString());
         return msg.ActionId;
     }
     
@@ -914,7 +1020,7 @@ public class EventGateway
         };
 
         _publisher.Publish(msg);
-        Console.WriteLine("Sent MsgMicroServiceHealthSummarySnapshot " + msg.ToString());
+        //Console.WriteLine("Sent MsgMicroServiceHealthSummarySnapshot " + msg.ToString());
         return msg.ActionId;
     }
     
@@ -948,7 +1054,7 @@ public class EventGateway
         };
 
         _publisher.Publish(msg);
-        Console.WriteLine("Sent MsgChat " + msg.ToString());
+        //Console.WriteLine("Sent MsgChat " + msg.ToString());
         return msg.ActionId;
     }
     
@@ -982,7 +1088,7 @@ public class EventGateway
         };
 
         _publisher.Publish(msg);
-        Console.WriteLine("Sent MsgTradingConnectionStatus " + msg.ToString());
+        //Console.WriteLine("Sent MsgTradingConnectionStatus " + msg.ToString());
         return msg.ActionId;
     }
     
@@ -1016,7 +1122,7 @@ public class EventGateway
         };
 
         _publisher.Publish(msg);
-        Console.WriteLine("Sent MsgSymbolStatus " + msg.ToString());
+        //Console.WriteLine("Sent MsgSymbolStatus " + msg.ToString());
         return msg.ActionId;
     }
     
@@ -1050,7 +1156,7 @@ public class EventGateway
         };
 
         _publisher.Publish(msg);
-        Console.WriteLine("Sent MsgStartTradingAccount " + msg.ToString());
+        //Console.WriteLine("Sent MsgStartTradingAccount " + msg.ToString());
         return msg.ActionId;
     }
     
@@ -1084,7 +1190,7 @@ public class EventGateway
         };
 
         _publisher.Publish(msg);
-        Console.WriteLine("Sent MsgStopTradingAccount " + msg.ToString());
+        //Console.WriteLine("Sent MsgStopTradingAccount " + msg.ToString());
         return msg.ActionId;
     }
     
@@ -1118,7 +1224,7 @@ public class EventGateway
         };
 
         _publisher.Publish(msg);
-        Console.WriteLine("Sent MsgSubscribeSymbol " + msg.ToString());
+        //Console.WriteLine("Sent MsgSubscribeSymbol " + msg.ToString());
         return msg.ActionId;
     }
     
@@ -1152,7 +1258,7 @@ public class EventGateway
         };
 
         _publisher.Publish(msg);
-        Console.WriteLine("Sent MsgUnSubscribeSymbol " + msg.ToString());
+        //Console.WriteLine("Sent MsgUnSubscribeSymbol " + msg.ToString());
         return msg.ActionId;
     }
     
@@ -1186,7 +1292,7 @@ public class EventGateway
         };
 
         _publisher.Publish(msg);
-        Console.WriteLine("Sent MsgOpenTradeManual " + msg.ToString());
+        //Console.WriteLine("Sent MsgOpenTradeManual " + msg.ToString());
         return msg.ActionId;
     }
     
@@ -1220,7 +1326,7 @@ public class EventGateway
         };
 
         _publisher.Publish(msg);
-        Console.WriteLine("Sent MsgStartTradingAccountResponse " + msg.ToString());
+        //Console.WriteLine("Sent MsgStartTradingAccountResponse " + msg.ToString());
         return msg.ActionId;
     }
     
@@ -1254,7 +1360,7 @@ public class EventGateway
         };
 
         _publisher.Publish(msg);
-        Console.WriteLine("Sent MsgStopTradingAccountResponse " + msg.ToString());
+        //Console.WriteLine("Sent MsgStopTradingAccountResponse " + msg.ToString());
         return msg.ActionId;
     }
     
@@ -1288,7 +1394,7 @@ public class EventGateway
         };
 
         _publisher.Publish(msg);
-        Console.WriteLine("Sent MsgSubscribeSymbolResponse " + msg.ToString());
+        //Console.WriteLine("Sent MsgSubscribeSymbolResponse " + msg.ToString());
         return msg.ActionId;
     }
     
@@ -1322,7 +1428,7 @@ public class EventGateway
         };
 
         _publisher.Publish(msg);
-        Console.WriteLine("Sent MsgUnSubscribeSymbolResponse " + msg.ToString());
+        //Console.WriteLine("Sent MsgUnSubscribeSymbolResponse " + msg.ToString());
         return msg.ActionId;
     }
     
@@ -1356,7 +1462,7 @@ public class EventGateway
         };
 
         _publisher.Publish(msg);
-        Console.WriteLine("Sent MsgOpenTradeManualResponse " + msg.ToString());
+        //Console.WriteLine("Sent MsgOpenTradeManualResponse " + msg.ToString());
         return msg.ActionId;
     }
     
@@ -1390,7 +1496,7 @@ public class EventGateway
         };
 
         _publisher.Publish(msg);
-        Console.WriteLine("Sent MsgMDTick " + msg.ToString());
+        //Console.WriteLine("Sent MsgMDTick " + msg.ToString());
         return msg.ActionId;
     }
     
@@ -1424,7 +1530,7 @@ public class EventGateway
         };
 
         _publisher.Publish(msg);
-        Console.WriteLine("Sent MsgMDSnapshot " + msg.ToString());
+        //Console.WriteLine("Sent MsgMDSnapshot " + msg.ToString());
         return msg.ActionId;
     }
     
@@ -1458,7 +1564,7 @@ public class EventGateway
         };
 
         _publisher.Publish(msg);
-        Console.WriteLine("Sent MsgMDRouting " + msg.ToString());
+        //Console.WriteLine("Sent MsgMDRouting " + msg.ToString());
         return msg.ActionId;
     }
     
@@ -1492,7 +1598,7 @@ public class EventGateway
         };
 
         _publisher.Publish(msg);
-        Console.WriteLine("Sent MsgTDTradeOpened " + msg.ToString());
+        //Console.WriteLine("Sent MsgTDTradeOpened " + msg.ToString());
         return msg.ActionId;
     }
     
@@ -1526,7 +1632,7 @@ public class EventGateway
         };
 
         _publisher.Publish(msg);
-        Console.WriteLine("Sent MsgTDTradeClosed " + msg.ToString());
+        //Console.WriteLine("Sent MsgTDTradeClosed " + msg.ToString());
         return msg.ActionId;
     }
     
@@ -1560,7 +1666,7 @@ public class EventGateway
         };
 
         _publisher.Publish(msg);
-        Console.WriteLine("Sent MsgTDSnapshot " + msg.ToString());
+        //Console.WriteLine("Sent MsgTDSnapshot " + msg.ToString());
         return msg.ActionId;
     }
     
@@ -1594,7 +1700,7 @@ public class EventGateway
         };
 
         _publisher.Publish(msg);
-        Console.WriteLine("Sent MsgSyncTradingAccount " + msg.ToString());
+        //Console.WriteLine("Sent MsgSyncTradingAccount " + msg.ToString());
         return msg.ActionId;
     }
     
@@ -1628,7 +1734,7 @@ public class EventGateway
         };
 
         _publisher.Publish(msg);
-        Console.WriteLine("Sent MsgStartingDC " + msg.ToString());
+        //Console.WriteLine("Sent MsgStartingDC " + msg.ToString());
         return msg.ActionId;
     }
     
@@ -1662,7 +1768,7 @@ public class EventGateway
         };
 
         _publisher.Publish(msg);
-        Console.WriteLine("Sent MsgStartedDC " + msg.ToString());
+        //Console.WriteLine("Sent MsgStartedDC " + msg.ToString());
         return msg.ActionId;
     }
     
@@ -1696,7 +1802,7 @@ public class EventGateway
         };
 
         _publisher.Publish(msg);
-        Console.WriteLine("Sent MsgRestartingDC " + msg.ToString());
+        //Console.WriteLine("Sent MsgRestartingDC " + msg.ToString());
         return msg.ActionId;
     }
     
@@ -1730,7 +1836,7 @@ public class EventGateway
         };
 
         _publisher.Publish(msg);
-        Console.WriteLine("Sent MsgFailedToStartDC " + msg.ToString());
+        //Console.WriteLine("Sent MsgFailedToStartDC " + msg.ToString());
         return msg.ActionId;
     }
     
@@ -1764,7 +1870,7 @@ public class EventGateway
         };
 
         _publisher.Publish(msg);
-        Console.WriteLine("Sent MsgDCClientConnected " + msg.ToString());
+        //Console.WriteLine("Sent MsgDCClientConnected " + msg.ToString());
         return msg.ActionId;
     }
     
@@ -1798,7 +1904,7 @@ public class EventGateway
         };
 
         _publisher.Publish(msg);
-        Console.WriteLine("Sent MsgDCClientDisconnected " + msg.ToString());
+        //Console.WriteLine("Sent MsgDCClientDisconnected " + msg.ToString());
         return msg.ActionId;
     }
     
@@ -1832,7 +1938,7 @@ public class EventGateway
         };
 
         _publisher.Publish(msg);
-        Console.WriteLine("Sent MsgDCMDSnapshot " + msg.ToString());
+        //Console.WriteLine("Sent MsgDCMDSnapshot " + msg.ToString());
         return msg.ActionId;
     }
     
@@ -1866,7 +1972,7 @@ public class EventGateway
         };
 
         _publisher.Publish(msg);
-        Console.WriteLine("Sent MsgDCMDTick " + msg.ToString());
+        //Console.WriteLine("Sent MsgDCMDTick " + msg.ToString());
         return msg.ActionId;
     }
     
@@ -1900,7 +2006,7 @@ public class EventGateway
         };
 
         _publisher.Publish(msg);
-        Console.WriteLine("Sent MsgDCRequestRestartFeed " + msg.ToString());
+        //Console.WriteLine("Sent MsgDCRequestRestartFeed " + msg.ToString());
         return msg.ActionId;
     }
     
@@ -1934,7 +2040,7 @@ public class EventGateway
         };
 
         _publisher.Publish(msg);
-        Console.WriteLine("Sent MsgDCRequestStartFeed " + msg.ToString());
+        //Console.WriteLine("Sent MsgDCRequestStartFeed " + msg.ToString());
         return msg.ActionId;
     }
     
@@ -1968,7 +2074,7 @@ public class EventGateway
         };
 
         _publisher.Publish(msg);
-        Console.WriteLine("Sent MsgDCRequestStopFeed " + msg.ToString());
+        //Console.WriteLine("Sent MsgDCRequestStopFeed " + msg.ToString());
         return msg.ActionId;
     }
     
@@ -2002,7 +2108,7 @@ public class EventGateway
         };
 
         _publisher.Publish(msg);
-        Console.WriteLine("Sent MsgDCRequestSubscribeAllSymbol " + msg.ToString());
+        //Console.WriteLine("Sent MsgDCRequestSubscribeAllSymbol " + msg.ToString());
         return msg.ActionId;
     }
     
@@ -2036,7 +2142,7 @@ public class EventGateway
         };
 
         _publisher.Publish(msg);
-        Console.WriteLine("Sent MsgDCRequestSubscribeSymbol " + msg.ToString());
+        //Console.WriteLine("Sent MsgDCRequestSubscribeSymbol " + msg.ToString());
         return msg.ActionId;
     }
     
@@ -2070,7 +2176,7 @@ public class EventGateway
         };
 
         _publisher.Publish(msg);
-        Console.WriteLine("Sent MsgDCRequestUnSubscribeAllSymbol " + msg.ToString());
+        //Console.WriteLine("Sent MsgDCRequestUnSubscribeAllSymbol " + msg.ToString());
         return msg.ActionId;
     }
     
@@ -2104,7 +2210,7 @@ public class EventGateway
         };
 
         _publisher.Publish(msg);
-        Console.WriteLine("Sent MsgDCRequestUnSubscribeSymbol " + msg.ToString());
+        //Console.WriteLine("Sent MsgDCRequestUnSubscribeSymbol " + msg.ToString());
         return msg.ActionId;
     }
     
@@ -2138,7 +2244,7 @@ public class EventGateway
         };
 
         _publisher.Publish(msg);
-        Console.WriteLine("Sent MsgDCResponseRestartFeed " + msg.ToString());
+        //Console.WriteLine("Sent MsgDCResponseRestartFeed " + msg.ToString());
         return msg.ActionId;
     }
     
@@ -2172,7 +2278,7 @@ public class EventGateway
         };
 
         _publisher.Publish(msg);
-        Console.WriteLine("Sent MsgDCResponseStartFeed " + msg.ToString());
+        //Console.WriteLine("Sent MsgDCResponseStartFeed " + msg.ToString());
         return msg.ActionId;
     }
     
@@ -2206,7 +2312,7 @@ public class EventGateway
         };
 
         _publisher.Publish(msg);
-        Console.WriteLine("Sent MsgDCResponseStopFeed " + msg.ToString());
+        //Console.WriteLine("Sent MsgDCResponseStopFeed " + msg.ToString());
         return msg.ActionId;
     }
     
@@ -2240,7 +2346,7 @@ public class EventGateway
         };
 
         _publisher.Publish(msg);
-        Console.WriteLine("Sent MsgDCResponseSubscribeAllSymbol " + msg.ToString());
+        //Console.WriteLine("Sent MsgDCResponseSubscribeAllSymbol " + msg.ToString());
         return msg.ActionId;
     }
     
@@ -2274,7 +2380,7 @@ public class EventGateway
         };
 
         _publisher.Publish(msg);
-        Console.WriteLine("Sent MsgDCResponseSubscribeSymbol " + msg.ToString());
+        //Console.WriteLine("Sent MsgDCResponseSubscribeSymbol " + msg.ToString());
         return msg.ActionId;
     }
     
@@ -2308,7 +2414,7 @@ public class EventGateway
         };
 
         _publisher.Publish(msg);
-        Console.WriteLine("Sent MsgDCResponseUnSubscribeAllSymbol " + msg.ToString());
+        //Console.WriteLine("Sent MsgDCResponseUnSubscribeAllSymbol " + msg.ToString());
         return msg.ActionId;
     }
     
@@ -2342,7 +2448,7 @@ public class EventGateway
         };
 
         _publisher.Publish(msg);
-        Console.WriteLine("Sent MsgDCResponseUnSubscribeSymbol " + msg.ToString());
+        //Console.WriteLine("Sent MsgDCResponseUnSubscribeSymbol " + msg.ToString());
         return msg.ActionId;
     }
     
@@ -2376,7 +2482,7 @@ public class EventGateway
         };
 
         _publisher.Publish(msg);
-        Console.WriteLine("Sent MsgSnapshotNodesSlim " + msg.ToString());
+        //Console.WriteLine("Sent MsgSnapshotNodesSlim " + msg.ToString());
         return msg.ActionId;
     }
     
@@ -2410,7 +2516,7 @@ public class EventGateway
         };
 
         _publisher.Publish(msg);
-        Console.WriteLine("Sent MsgSnapshotDCNodesSlim " + msg.ToString());
+        //Console.WriteLine("Sent MsgSnapshotDCNodesSlim " + msg.ToString());
         return msg.ActionId;
     }
     
@@ -2444,7 +2550,7 @@ public class EventGateway
         };
 
         _publisher.Publish(msg);
-        Console.WriteLine("Sent MsgSnapshotSingleDCNode " + msg.ToString());
+        //Console.WriteLine("Sent MsgSnapshotSingleDCNode " + msg.ToString());
         return msg.ActionId;
     }
     
@@ -2478,7 +2584,7 @@ public class EventGateway
         };
 
         _publisher.Publish(msg);
-        Console.WriteLine("Sent MsgSnapshotGroupDCNodes " + msg.ToString());
+        //Console.WriteLine("Sent MsgSnapshotGroupDCNodes " + msg.ToString());
         return msg.ActionId;
     }
     
@@ -2512,7 +2618,109 @@ public class EventGateway
         };
 
         _publisher.Publish(msg);
-        Console.WriteLine("Sent MsgSnapshotFullSingleAgentNode " + msg.ToString());
+        //Console.WriteLine("Sent MsgSnapshotFullSingleAgentNode " + msg.ToString());
+        return msg.ActionId;
+    }
+    
+    public string Send(MsgTCLog @event,
+        long? ts = null,
+        string severity = null,
+        string actionId = null,
+        string organizationId = null,
+        string userId = null,
+        string nodeId = null,
+        string userEmail = null
+    )
+    {
+        var msg = new RabbitMsgWrapper()
+        {
+            Ts = ts ?? DateTime.UtcNow.Ticks,
+            Severity = severity ?? "Information",
+            ActionId = actionId ?? Guid.NewGuid().ToString(),
+            Exchange = "exchange.tc.logs",
+            MessageType = "MsgTCLog",
+            ByteMsg = MessagePackSerializer.Serialize(@event),
+            OrganizationId = organizationId ?? "System",
+            UserId = userId ?? "System",
+            NodeId = nodeId ?? "System",
+            UserEmail = userEmail ?? "System",
+
+            AppName = _eventGatewayConfiguration.ServiceName,
+            AppVersion = _eventGatewayConfiguration.ServiceVersion,
+            SharedVersion = _eventGatewayConfiguration.ServiceSharedVersion,
+            SchemaVersion = MsgSchema.Version.ToString()
+        };
+
+        _publisher.Publish(msg);
+        //Console.WriteLine("Sent MsgTCLog " + msg.ToString());
+        return msg.ActionId;
+    }
+    
+    public string Send(MsgSnapshotSingleAgentLiveTrades @event,
+        long? ts = null,
+        string severity = null,
+        string actionId = null,
+        string organizationId = null,
+        string userId = null,
+        string nodeId = null,
+        string userEmail = null
+    )
+    {
+        var msg = new RabbitMsgWrapper()
+        {
+            Ts = ts ?? DateTime.UtcNow.Ticks,
+            Severity = severity ?? "Information",
+            ActionId = actionId ?? Guid.NewGuid().ToString(),
+            Exchange = "exchange.snapshot.notification",
+            MessageType = "MsgSnapshotSingleAgentLiveTrades",
+            ByteMsg = MessagePackSerializer.Serialize(@event),
+            OrganizationId = organizationId ?? "System",
+            UserId = userId ?? "System",
+            NodeId = nodeId ?? "System",
+            UserEmail = userEmail ?? "System",
+
+            AppName = _eventGatewayConfiguration.ServiceName,
+            AppVersion = _eventGatewayConfiguration.ServiceVersion,
+            SharedVersion = _eventGatewayConfiguration.ServiceSharedVersion,
+            SchemaVersion = MsgSchema.Version.ToString()
+        };
+
+        _publisher.Publish(msg);
+        //Console.WriteLine("Sent MsgSnapshotSingleAgentLiveTrades " + msg.ToString());
+        return msg.ActionId;
+    }
+    
+    public string Send(MsgSnapshotSingleAgentMarketData @event,
+        long? ts = null,
+        string severity = null,
+        string actionId = null,
+        string organizationId = null,
+        string userId = null,
+        string nodeId = null,
+        string userEmail = null
+    )
+    {
+        var msg = new RabbitMsgWrapper()
+        {
+            Ts = ts ?? DateTime.UtcNow.Ticks,
+            Severity = severity ?? "Information",
+            ActionId = actionId ?? Guid.NewGuid().ToString(),
+            Exchange = "exchange.snapshot.notification",
+            MessageType = "MsgSnapshotSingleAgentMarketData",
+            ByteMsg = MessagePackSerializer.Serialize(@event),
+            OrganizationId = organizationId ?? "System",
+            UserId = userId ?? "System",
+            NodeId = nodeId ?? "System",
+            UserEmail = userEmail ?? "System",
+
+            AppName = _eventGatewayConfiguration.ServiceName,
+            AppVersion = _eventGatewayConfiguration.ServiceVersion,
+            SharedVersion = _eventGatewayConfiguration.ServiceSharedVersion,
+            SchemaVersion = MsgSchema.Version.ToString()
+        };
+
+        _publisher.Publish(msg);
+        //Console.WriteLine("Sent MsgSnapshotSingleAgentMarketData " + msg.ToString());
         return msg.ActionId;
     }
     
@@ -2530,357 +2738,378 @@ public class EventGateway
         if (msg.MessageType == "MsgRegisterMicroService")
         {
             EventMsgRegisterMicroService?.Invoke(msg, MessagePackSerializer.Deserialize<MsgRegisterMicroService>(msg.ByteMsg));
-            Console.WriteLine("Received MsgRegisterMicroService " + msg.ToString());
+            //Console.WriteLine("Received MsgRegisterMicroService " + msg.ToString());
             return;
         }
     
         if (msg.MessageType == "MsgMicroServiceHealthSummaryRequest")
         {
             EventMsgMicroServiceHealthSummaryRequest?.Invoke(msg, MessagePackSerializer.Deserialize<MsgMicroServiceHealthSummaryRequest>(msg.ByteMsg));
-            Console.WriteLine("Received MsgMicroServiceHealthSummaryRequest " + msg.ToString());
+            //Console.WriteLine("Received MsgMicroServiceHealthSummaryRequest " + msg.ToString());
             return;
         }
     
         if (msg.MessageType == "MsgMicroServiceHealthSummaryNotification")
         {
             EventMsgMicroServiceHealthSummaryNotification?.Invoke(msg, MessagePackSerializer.Deserialize<MsgMicroServiceHealthSummaryNotification>(msg.ByteMsg));
-            Console.WriteLine("Received MsgMicroServiceHealthSummaryNotification " + msg.ToString());
+            //Console.WriteLine("Received MsgMicroServiceHealthSummaryNotification " + msg.ToString());
             return;
         }
     
         if (msg.MessageType == "MsgMicroServiceHealthSummarySnapshot")
         {
             EventMsgMicroServiceHealthSummarySnapshot?.Invoke(msg, MessagePackSerializer.Deserialize<MsgMicroServiceHealthSummarySnapshot>(msg.ByteMsg));
-            Console.WriteLine("Received MsgMicroServiceHealthSummarySnapshot " + msg.ToString());
+            //Console.WriteLine("Received MsgMicroServiceHealthSummarySnapshot " + msg.ToString());
             return;
         }
     
         if (msg.MessageType == "MsgChat")
         {
             EventMsgChat?.Invoke(msg, MessagePackSerializer.Deserialize<MsgChat>(msg.ByteMsg));
-            Console.WriteLine("Received MsgChat " + msg.ToString());
+            //Console.WriteLine("Received MsgChat " + msg.ToString());
             return;
         }
     
         if (msg.MessageType == "MsgTradingConnectionStatus")
         {
             EventMsgTradingConnectionStatus?.Invoke(msg, MessagePackSerializer.Deserialize<MsgTradingConnectionStatus>(msg.ByteMsg));
-            Console.WriteLine("Received MsgTradingConnectionStatus " + msg.ToString());
+            //Console.WriteLine("Received MsgTradingConnectionStatus " + msg.ToString());
             return;
         }
     
         if (msg.MessageType == "MsgSymbolStatus")
         {
             EventMsgSymbolStatus?.Invoke(msg, MessagePackSerializer.Deserialize<MsgSymbolStatus>(msg.ByteMsg));
-            Console.WriteLine("Received MsgSymbolStatus " + msg.ToString());
+            //Console.WriteLine("Received MsgSymbolStatus " + msg.ToString());
             return;
         }
     
         if (msg.MessageType == "MsgStartTradingAccount")
         {
             EventMsgStartTradingAccount?.Invoke(msg, MessagePackSerializer.Deserialize<MsgStartTradingAccount>(msg.ByteMsg));
-            Console.WriteLine("Received MsgStartTradingAccount " + msg.ToString());
+            //Console.WriteLine("Received MsgStartTradingAccount " + msg.ToString());
             return;
         }
     
         if (msg.MessageType == "MsgStopTradingAccount")
         {
             EventMsgStopTradingAccount?.Invoke(msg, MessagePackSerializer.Deserialize<MsgStopTradingAccount>(msg.ByteMsg));
-            Console.WriteLine("Received MsgStopTradingAccount " + msg.ToString());
+            //Console.WriteLine("Received MsgStopTradingAccount " + msg.ToString());
             return;
         }
     
         if (msg.MessageType == "MsgSubscribeSymbol")
         {
             EventMsgSubscribeSymbol?.Invoke(msg, MessagePackSerializer.Deserialize<MsgSubscribeSymbol>(msg.ByteMsg));
-            Console.WriteLine("Received MsgSubscribeSymbol " + msg.ToString());
+            //Console.WriteLine("Received MsgSubscribeSymbol " + msg.ToString());
             return;
         }
     
         if (msg.MessageType == "MsgUnSubscribeSymbol")
         {
             EventMsgUnSubscribeSymbol?.Invoke(msg, MessagePackSerializer.Deserialize<MsgUnSubscribeSymbol>(msg.ByteMsg));
-            Console.WriteLine("Received MsgUnSubscribeSymbol " + msg.ToString());
+            //Console.WriteLine("Received MsgUnSubscribeSymbol " + msg.ToString());
             return;
         }
     
         if (msg.MessageType == "MsgOpenTradeManual")
         {
             EventMsgOpenTradeManual?.Invoke(msg, MessagePackSerializer.Deserialize<MsgOpenTradeManual>(msg.ByteMsg));
-            Console.WriteLine("Received MsgOpenTradeManual " + msg.ToString());
+            //Console.WriteLine("Received MsgOpenTradeManual " + msg.ToString());
             return;
         }
     
         if (msg.MessageType == "MsgStartTradingAccountResponse")
         {
             EventMsgStartTradingAccountResponse?.Invoke(msg, MessagePackSerializer.Deserialize<MsgStartTradingAccountResponse>(msg.ByteMsg));
-            Console.WriteLine("Received MsgStartTradingAccountResponse " + msg.ToString());
+            //Console.WriteLine("Received MsgStartTradingAccountResponse " + msg.ToString());
             return;
         }
     
         if (msg.MessageType == "MsgStopTradingAccountResponse")
         {
             EventMsgStopTradingAccountResponse?.Invoke(msg, MessagePackSerializer.Deserialize<MsgStopTradingAccountResponse>(msg.ByteMsg));
-            Console.WriteLine("Received MsgStopTradingAccountResponse " + msg.ToString());
+            //Console.WriteLine("Received MsgStopTradingAccountResponse " + msg.ToString());
             return;
         }
     
         if (msg.MessageType == "MsgSubscribeSymbolResponse")
         {
             EventMsgSubscribeSymbolResponse?.Invoke(msg, MessagePackSerializer.Deserialize<MsgSubscribeSymbolResponse>(msg.ByteMsg));
-            Console.WriteLine("Received MsgSubscribeSymbolResponse " + msg.ToString());
+            //Console.WriteLine("Received MsgSubscribeSymbolResponse " + msg.ToString());
             return;
         }
     
         if (msg.MessageType == "MsgUnSubscribeSymbolResponse")
         {
             EventMsgUnSubscribeSymbolResponse?.Invoke(msg, MessagePackSerializer.Deserialize<MsgUnSubscribeSymbolResponse>(msg.ByteMsg));
-            Console.WriteLine("Received MsgUnSubscribeSymbolResponse " + msg.ToString());
+            //Console.WriteLine("Received MsgUnSubscribeSymbolResponse " + msg.ToString());
             return;
         }
     
         if (msg.MessageType == "MsgOpenTradeManualResponse")
         {
             EventMsgOpenTradeManualResponse?.Invoke(msg, MessagePackSerializer.Deserialize<MsgOpenTradeManualResponse>(msg.ByteMsg));
-            Console.WriteLine("Received MsgOpenTradeManualResponse " + msg.ToString());
+            //Console.WriteLine("Received MsgOpenTradeManualResponse " + msg.ToString());
             return;
         }
     
         if (msg.MessageType == "MsgMDTick")
         {
             EventMsgMDTick?.Invoke(msg, MessagePackSerializer.Deserialize<MsgMDTick>(msg.ByteMsg));
-            Console.WriteLine("Received MsgMDTick " + msg.ToString());
+            //Console.WriteLine("Received MsgMDTick " + msg.ToString());
             return;
         }
     
         if (msg.MessageType == "MsgMDSnapshot")
         {
             EventMsgMDSnapshot?.Invoke(msg, MessagePackSerializer.Deserialize<MsgMDSnapshot>(msg.ByteMsg));
-            Console.WriteLine("Received MsgMDSnapshot " + msg.ToString());
+            //Console.WriteLine("Received MsgMDSnapshot " + msg.ToString());
             return;
         }
     
         if (msg.MessageType == "MsgMDRouting")
         {
             EventMsgMDRouting?.Invoke(msg, MessagePackSerializer.Deserialize<MsgMDRouting>(msg.ByteMsg));
-            Console.WriteLine("Received MsgMDRouting " + msg.ToString());
+            //Console.WriteLine("Received MsgMDRouting " + msg.ToString());
             return;
         }
     
         if (msg.MessageType == "MsgTDTradeOpened")
         {
             EventMsgTDTradeOpened?.Invoke(msg, MessagePackSerializer.Deserialize<MsgTDTradeOpened>(msg.ByteMsg));
-            Console.WriteLine("Received MsgTDTradeOpened " + msg.ToString());
+            //Console.WriteLine("Received MsgTDTradeOpened " + msg.ToString());
             return;
         }
     
         if (msg.MessageType == "MsgTDTradeClosed")
         {
             EventMsgTDTradeClosed?.Invoke(msg, MessagePackSerializer.Deserialize<MsgTDTradeClosed>(msg.ByteMsg));
-            Console.WriteLine("Received MsgTDTradeClosed " + msg.ToString());
+            //Console.WriteLine("Received MsgTDTradeClosed " + msg.ToString());
             return;
         }
     
         if (msg.MessageType == "MsgTDSnapshot")
         {
             EventMsgTDSnapshot?.Invoke(msg, MessagePackSerializer.Deserialize<MsgTDSnapshot>(msg.ByteMsg));
-            Console.WriteLine("Received MsgTDSnapshot " + msg.ToString());
+            //Console.WriteLine("Received MsgTDSnapshot " + msg.ToString());
             return;
         }
     
         if (msg.MessageType == "MsgSyncTradingAccount")
         {
             EventMsgSyncTradingAccount?.Invoke(msg, MessagePackSerializer.Deserialize<MsgSyncTradingAccount>(msg.ByteMsg));
-            Console.WriteLine("Received MsgSyncTradingAccount " + msg.ToString());
+            //Console.WriteLine("Received MsgSyncTradingAccount " + msg.ToString());
             return;
         }
     
         if (msg.MessageType == "MsgStartingDC")
         {
             EventMsgStartingDC?.Invoke(msg, MessagePackSerializer.Deserialize<MsgStartingDC>(msg.ByteMsg));
-            Console.WriteLine("Received MsgStartingDC " + msg.ToString());
+            //Console.WriteLine("Received MsgStartingDC " + msg.ToString());
             return;
         }
     
         if (msg.MessageType == "MsgStartedDC")
         {
             EventMsgStartedDC?.Invoke(msg, MessagePackSerializer.Deserialize<MsgStartedDC>(msg.ByteMsg));
-            Console.WriteLine("Received MsgStartedDC " + msg.ToString());
+            //Console.WriteLine("Received MsgStartedDC " + msg.ToString());
             return;
         }
     
         if (msg.MessageType == "MsgRestartingDC")
         {
             EventMsgRestartingDC?.Invoke(msg, MessagePackSerializer.Deserialize<MsgRestartingDC>(msg.ByteMsg));
-            Console.WriteLine("Received MsgRestartingDC " + msg.ToString());
+            //Console.WriteLine("Received MsgRestartingDC " + msg.ToString());
             return;
         }
     
         if (msg.MessageType == "MsgFailedToStartDC")
         {
             EventMsgFailedToStartDC?.Invoke(msg, MessagePackSerializer.Deserialize<MsgFailedToStartDC>(msg.ByteMsg));
-            Console.WriteLine("Received MsgFailedToStartDC " + msg.ToString());
+            //Console.WriteLine("Received MsgFailedToStartDC " + msg.ToString());
             return;
         }
     
         if (msg.MessageType == "MsgDCClientConnected")
         {
             EventMsgDCClientConnected?.Invoke(msg, MessagePackSerializer.Deserialize<MsgDCClientConnected>(msg.ByteMsg));
-            Console.WriteLine("Received MsgDCClientConnected " + msg.ToString());
+            //Console.WriteLine("Received MsgDCClientConnected " + msg.ToString());
             return;
         }
     
         if (msg.MessageType == "MsgDCClientDisconnected")
         {
             EventMsgDCClientDisconnected?.Invoke(msg, MessagePackSerializer.Deserialize<MsgDCClientDisconnected>(msg.ByteMsg));
-            Console.WriteLine("Received MsgDCClientDisconnected " + msg.ToString());
+            //Console.WriteLine("Received MsgDCClientDisconnected " + msg.ToString());
             return;
         }
     
         if (msg.MessageType == "MsgDCMDSnapshot")
         {
             EventMsgDCMDSnapshot?.Invoke(msg, MessagePackSerializer.Deserialize<MsgDCMDSnapshot>(msg.ByteMsg));
-            Console.WriteLine("Received MsgDCMDSnapshot " + msg.ToString());
+            //Console.WriteLine("Received MsgDCMDSnapshot " + msg.ToString());
             return;
         }
     
         if (msg.MessageType == "MsgDCMDTick")
         {
             EventMsgDCMDTick?.Invoke(msg, MessagePackSerializer.Deserialize<MsgDCMDTick>(msg.ByteMsg));
-            Console.WriteLine("Received MsgDCMDTick " + msg.ToString());
+            //Console.WriteLine("Received MsgDCMDTick " + msg.ToString());
             return;
         }
     
         if (msg.MessageType == "MsgDCRequestRestartFeed")
         {
             EventMsgDCRequestRestartFeed?.Invoke(msg, MessagePackSerializer.Deserialize<MsgDCRequestRestartFeed>(msg.ByteMsg));
-            Console.WriteLine("Received MsgDCRequestRestartFeed " + msg.ToString());
+            //Console.WriteLine("Received MsgDCRequestRestartFeed " + msg.ToString());
             return;
         }
     
         if (msg.MessageType == "MsgDCRequestStartFeed")
         {
             EventMsgDCRequestStartFeed?.Invoke(msg, MessagePackSerializer.Deserialize<MsgDCRequestStartFeed>(msg.ByteMsg));
-            Console.WriteLine("Received MsgDCRequestStartFeed " + msg.ToString());
+            //Console.WriteLine("Received MsgDCRequestStartFeed " + msg.ToString());
             return;
         }
     
         if (msg.MessageType == "MsgDCRequestStopFeed")
         {
             EventMsgDCRequestStopFeed?.Invoke(msg, MessagePackSerializer.Deserialize<MsgDCRequestStopFeed>(msg.ByteMsg));
-            Console.WriteLine("Received MsgDCRequestStopFeed " + msg.ToString());
+            //Console.WriteLine("Received MsgDCRequestStopFeed " + msg.ToString());
             return;
         }
     
         if (msg.MessageType == "MsgDCRequestSubscribeAllSymbol")
         {
             EventMsgDCRequestSubscribeAllSymbol?.Invoke(msg, MessagePackSerializer.Deserialize<MsgDCRequestSubscribeAllSymbol>(msg.ByteMsg));
-            Console.WriteLine("Received MsgDCRequestSubscribeAllSymbol " + msg.ToString());
+            //Console.WriteLine("Received MsgDCRequestSubscribeAllSymbol " + msg.ToString());
             return;
         }
     
         if (msg.MessageType == "MsgDCRequestSubscribeSymbol")
         {
             EventMsgDCRequestSubscribeSymbol?.Invoke(msg, MessagePackSerializer.Deserialize<MsgDCRequestSubscribeSymbol>(msg.ByteMsg));
-            Console.WriteLine("Received MsgDCRequestSubscribeSymbol " + msg.ToString());
+            //Console.WriteLine("Received MsgDCRequestSubscribeSymbol " + msg.ToString());
             return;
         }
     
         if (msg.MessageType == "MsgDCRequestUnSubscribeAllSymbol")
         {
             EventMsgDCRequestUnSubscribeAllSymbol?.Invoke(msg, MessagePackSerializer.Deserialize<MsgDCRequestUnSubscribeAllSymbol>(msg.ByteMsg));
-            Console.WriteLine("Received MsgDCRequestUnSubscribeAllSymbol " + msg.ToString());
+            //Console.WriteLine("Received MsgDCRequestUnSubscribeAllSymbol " + msg.ToString());
             return;
         }
     
         if (msg.MessageType == "MsgDCRequestUnSubscribeSymbol")
         {
             EventMsgDCRequestUnSubscribeSymbol?.Invoke(msg, MessagePackSerializer.Deserialize<MsgDCRequestUnSubscribeSymbol>(msg.ByteMsg));
-            Console.WriteLine("Received MsgDCRequestUnSubscribeSymbol " + msg.ToString());
+            //Console.WriteLine("Received MsgDCRequestUnSubscribeSymbol " + msg.ToString());
             return;
         }
     
         if (msg.MessageType == "MsgDCResponseRestartFeed")
         {
             EventMsgDCResponseRestartFeed?.Invoke(msg, MessagePackSerializer.Deserialize<MsgDCResponseRestartFeed>(msg.ByteMsg));
-            Console.WriteLine("Received MsgDCResponseRestartFeed " + msg.ToString());
+            //Console.WriteLine("Received MsgDCResponseRestartFeed " + msg.ToString());
             return;
         }
     
         if (msg.MessageType == "MsgDCResponseStartFeed")
         {
             EventMsgDCResponseStartFeed?.Invoke(msg, MessagePackSerializer.Deserialize<MsgDCResponseStartFeed>(msg.ByteMsg));
-            Console.WriteLine("Received MsgDCResponseStartFeed " + msg.ToString());
+            //Console.WriteLine("Received MsgDCResponseStartFeed " + msg.ToString());
             return;
         }
     
         if (msg.MessageType == "MsgDCResponseStopFeed")
         {
             EventMsgDCResponseStopFeed?.Invoke(msg, MessagePackSerializer.Deserialize<MsgDCResponseStopFeed>(msg.ByteMsg));
-            Console.WriteLine("Received MsgDCResponseStopFeed " + msg.ToString());
+            //Console.WriteLine("Received MsgDCResponseStopFeed " + msg.ToString());
             return;
         }
     
         if (msg.MessageType == "MsgDCResponseSubscribeAllSymbol")
         {
             EventMsgDCResponseSubscribeAllSymbol?.Invoke(msg, MessagePackSerializer.Deserialize<MsgDCResponseSubscribeAllSymbol>(msg.ByteMsg));
-            Console.WriteLine("Received MsgDCResponseSubscribeAllSymbol " + msg.ToString());
+            //Console.WriteLine("Received MsgDCResponseSubscribeAllSymbol " + msg.ToString());
             return;
         }
     
         if (msg.MessageType == "MsgDCResponseSubscribeSymbol")
         {
             EventMsgDCResponseSubscribeSymbol?.Invoke(msg, MessagePackSerializer.Deserialize<MsgDCResponseSubscribeSymbol>(msg.ByteMsg));
-            Console.WriteLine("Received MsgDCResponseSubscribeSymbol " + msg.ToString());
+            //Console.WriteLine("Received MsgDCResponseSubscribeSymbol " + msg.ToString());
             return;
         }
     
         if (msg.MessageType == "MsgDCResponseUnSubscribeAllSymbol")
         {
             EventMsgDCResponseUnSubscribeAllSymbol?.Invoke(msg, MessagePackSerializer.Deserialize<MsgDCResponseUnSubscribeAllSymbol>(msg.ByteMsg));
-            Console.WriteLine("Received MsgDCResponseUnSubscribeAllSymbol " + msg.ToString());
+            //Console.WriteLine("Received MsgDCResponseUnSubscribeAllSymbol " + msg.ToString());
             return;
         }
     
         if (msg.MessageType == "MsgDCResponseUnSubscribeSymbol")
         {
             EventMsgDCResponseUnSubscribeSymbol?.Invoke(msg, MessagePackSerializer.Deserialize<MsgDCResponseUnSubscribeSymbol>(msg.ByteMsg));
-            Console.WriteLine("Received MsgDCResponseUnSubscribeSymbol " + msg.ToString());
+            //Console.WriteLine("Received MsgDCResponseUnSubscribeSymbol " + msg.ToString());
             return;
         }
     
         if (msg.MessageType == "MsgSnapshotNodesSlim")
         {
             EventMsgSnapshotNodesSlim?.Invoke(msg, MessagePackSerializer.Deserialize<MsgSnapshotNodesSlim>(msg.ByteMsg));
-            Console.WriteLine("Received MsgSnapshotNodesSlim " + msg.ToString());
+            //Console.WriteLine("Received MsgSnapshotNodesSlim " + msg.ToString());
             return;
         }
     
         if (msg.MessageType == "MsgSnapshotDCNodesSlim")
         {
             EventMsgSnapshotDCNodesSlim?.Invoke(msg, MessagePackSerializer.Deserialize<MsgSnapshotDCNodesSlim>(msg.ByteMsg));
-            Console.WriteLine("Received MsgSnapshotDCNodesSlim " + msg.ToString());
+            //Console.WriteLine("Received MsgSnapshotDCNodesSlim " + msg.ToString());
             return;
         }
     
         if (msg.MessageType == "MsgSnapshotSingleDCNode")
         {
             EventMsgSnapshotSingleDCNode?.Invoke(msg, MessagePackSerializer.Deserialize<MsgSnapshotSingleDCNode>(msg.ByteMsg));
-            Console.WriteLine("Received MsgSnapshotSingleDCNode " + msg.ToString());
+            //Console.WriteLine("Received MsgSnapshotSingleDCNode " + msg.ToString());
             return;
         }
     
         if (msg.MessageType == "MsgSnapshotGroupDCNodes")
         {
             EventMsgSnapshotGroupDCNodes?.Invoke(msg, MessagePackSerializer.Deserialize<MsgSnapshotGroupDCNodes>(msg.ByteMsg));
-            Console.WriteLine("Received MsgSnapshotGroupDCNodes " + msg.ToString());
+            //Console.WriteLine("Received MsgSnapshotGroupDCNodes " + msg.ToString());
             return;
         }
     
         if (msg.MessageType == "MsgSnapshotFullSingleAgentNode")
         {
             EventMsgSnapshotFullSingleAgentNode?.Invoke(msg, MessagePackSerializer.Deserialize<MsgSnapshotFullSingleAgentNode>(msg.ByteMsg));
-            Console.WriteLine("Received MsgSnapshotFullSingleAgentNode " + msg.ToString());
+            //Console.WriteLine("Received MsgSnapshotFullSingleAgentNode " + msg.ToString());
+            return;
+        }
+    
+        if (msg.MessageType == "MsgTCLog")
+        {
+            EventMsgTCLog?.Invoke(msg, MessagePackSerializer.Deserialize<MsgTCLog>(msg.ByteMsg));
+            //Console.WriteLine("Received MsgTCLog " + msg.ToString());
+            return;
+        }
+    
+        if (msg.MessageType == "MsgSnapshotSingleAgentLiveTrades")
+        {
+            EventMsgSnapshotSingleAgentLiveTrades?.Invoke(msg, MessagePackSerializer.Deserialize<MsgSnapshotSingleAgentLiveTrades>(msg.ByteMsg));
+            //Console.WriteLine("Received MsgSnapshotSingleAgentLiveTrades " + msg.ToString());
+            return;
+        }
+    
+        if (msg.MessageType == "MsgSnapshotSingleAgentMarketData")
+        {
+            EventMsgSnapshotSingleAgentMarketData?.Invoke(msg, MessagePackSerializer.Deserialize<MsgSnapshotSingleAgentMarketData>(msg.ByteMsg));
+            //Console.WriteLine("Received MsgSnapshotSingleAgentMarketData " + msg.ToString());
             return;
         }
     

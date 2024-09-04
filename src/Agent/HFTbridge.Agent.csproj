@@ -8,7 +8,7 @@
     <LangVersion>preview</LangVersion>
     <PublishSingleFile>true</PublishSingleFile>
     <SelfContained>true</SelfContained>
-    <Version>1.0.0.2</Version>
+    <Version>1.0.0.3</Version>
   </PropertyGroup>
 
 
@@ -23,6 +23,7 @@
     <PackageReference Include="Serilog.Sinks.Console" Version="4.1.0" />
     <PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
         <PackageReference Include="RabbitMQ.Client" Version="6.5.0" />
+        <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
   </ItemGroup>
 
   <!-- <ItemGroup>
@@ -35,6 +36,9 @@
     <!-- <ProjectReference Include="..\HFTbridge.Engine\HFTbridge.Engine.csproj" /> -->
     <ProjectReference Include="..\..\shared\HFTbridge.Node.Shared\HFTbridge.Node.Shared.csproj" />
     <ProjectReference Include="..\..\shared\HFTbridge.Node.Msg\HFTbridge.Node.Msg.csproj" />
+
+    <ProjectReference Include="..\..\HFTFeed\ProtoClient\ProtoClient.csproj" />
+    <ProjectReference Include="..\..\HFTFeed\proto\proto.csproj" />
   </ItemGroup>
 
 

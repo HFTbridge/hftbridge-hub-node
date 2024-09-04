@@ -1,0 +1,10 @@
+{"@t":"2024-09-03T15:00:10.1073750Z","@mt":"TCP protocol client starting a new session with Id '{Id}'","Id":"1e9b6ead-5b24-4574-9a70-967d05df8798"}
+{"@t":"2024-09-03T15:15:52.6221920Z","@mt":"TCP protocol client starting a new session with Id '{Id}'","Id":"180f71d3-a792-4388-9586-287565f20989"}
+{"@t":"2024-09-03T15:35:51.0157920Z","@mt":"TCP protocol client starting a new session with Id '{Id}'","Id":"56c53e73-b855-4ee0-9c28-8acf0413e827"}
+{"@t":"2024-09-03T16:10:22.2066750Z","@mt":"TCP protocol client starting a new session with Id '{Id}'","Id":"46126436-93f9-43aa-b62a-305affa0c8cd"}
+{"@t":"2024-09-03T16:20:50.0885550Z","@mt":"TCP protocol client starting a new session with Id '{Id}'","Id":"4cc24f6a-cbd4-4a84-9b8b-2ba2376ee3b9"}
+{"@t":"2024-09-03T16:29:09.4732670Z","@mt":"TCP protocol client starting a new session with Id '{Id}'","Id":"bffbe0ea-c6bb-4075-9344-0bcf2dbad443"}
+{"@t":"2024-09-03T18:41:06.5495600Z","@mt":"TCP protocol client starting a new session with Id '{Id}'","Id":"bb5a9d5a-a502-4ee9-8589-1e4b11be1417"}
+{"@t":"2024-09-03T18:42:07.9716760Z","@mt":"TCP protocol client starting a new session with Id '{Id}'","Id":"3d86d2c6-7bb0-4ef2-bd9e-8391ed398776"}
+{"@t":"2024-09-03T18:43:53.7205370Z","@mt":"TCP protocol client starting a new session with Id '{Id}'","Id":"e5020428-0d6e-4551-a737-07a43994ba83"}
+{"@t":"2024-09-03T18:51:03.7868900Z","@mt":"TCP protocol client starting a new session with Id '{Id}'","Id":"e45bc203-2f55-4ace-9b37-87279794ea5f"}
