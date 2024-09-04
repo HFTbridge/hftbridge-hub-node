@@ -7,6 +7,7 @@ namespace HFTbridge.Node.Agent
     {
         private EventGateway _eventGateway;
         private readonly HFTBridgeEngine _engine;
+
         public MsgHandler(EventGateway eventGateway, HFTBridgeEngine engine)
         {
             _engine = engine;
@@ -15,31 +16,33 @@ namespace HFTbridge.Node.Agent
             _eventGateway.EventMsgStopTradingAccount += HandleMsg;
             _eventGateway.EventMsgSubscribeSymbol += HandleMsg;
             _eventGateway.EventMsgUnSubscribeSymbol += HandleMsg;
-
         }
 
         // Handlers
-        private void HandleMsg (RabbitMsgWrapper msg, MsgStartTradingAccount @event)
+        private void HandleMsg(RabbitMsgWrapper msg, MsgStartTradingAccount @event)
         {
             try
             {
                 var response = new MsgStartTradingAccountResponse()
                 {
                     Ts = DateTime.UtcNow.Ticks,
-                    ServiceName = "fefefe",
-                    ServiceUrl = "efwfewfw",
-                    ServiceVersion = "hbfewbifwefbw",
+                    TradingAccountId = @event.TradingAccountId,
+                    TradingAccountProvider = @event.TradingAccountProvider,
+                    BrokerId = @event.BrokerId,
+                    Message = "Trading account started successfully.",
+                    SubscribedSymbolKeys = new string[0],  // Assuming no symbols are subscribed at the start
+                    FailedToSubscribeSymbolKeys = new string[0]
                 };
 
                 _engine.Connect(@event, msg.OrganizationId, msg.UserId);
 
                 _eventGateway.Send(response, 
-                    organizationId:msg.OrganizationId,
-                    severity:"Warning",
-                    actionId:msg.ActionId,
-                    userId:msg.UserId,
-                    nodeId:msg.NodeId,
-                    userEmail:msg.UserEmail
+                    organizationId: msg.OrganizationId,
+                    severity: "Info",
+                    actionId: msg.ActionId,
+                    userId: msg.UserId,
+                    nodeId: msg.NodeId,
+                    userEmail: msg.UserEmail
                 );
             }
             catch (System.Exception e)
@@ -47,45 +50,47 @@ namespace HFTbridge.Node.Agent
                 var response = new MsgStartTradingAccountResponse()
                 {
                     Ts = DateTime.UtcNow.Ticks,
-                    ServiceName = "fefefe",
-                    ServiceUrl = "efwfewfw",
-                    ServiceVersion = "hbfewbifwefbw",
+                    TradingAccountId = @event.TradingAccountId,
+                    TradingAccountProvider = @event.TradingAccountProvider,
+                    BrokerId = @event.BrokerId,
+                    Message = $"Failed to start trading account: {e.Message}",
+                    SubscribedSymbolKeys = new string[0],
+                    FailedToSubscribeSymbolKeys = new string[0]
                 };
 
                 _eventGateway.Send(response, 
-                    organizationId:msg.OrganizationId,
-                    severity:"Warning",
-                    actionId:msg.ActionId,
-                    userId:msg.UserId,
-                    nodeId:msg.NodeId,
-                    userEmail:msg.UserEmail
+                    organizationId: msg.OrganizationId,
+                    severity: "Error",
+                    actionId: msg.ActionId,
+                    userId: msg.UserId,
+                    nodeId: msg.NodeId,
+                    userEmail: msg.UserEmail
                 );
             }
-
-            
         }
 
-        private void HandleMsg (RabbitMsgWrapper msg, MsgStopTradingAccount @event)
+        private void HandleMsg(RabbitMsgWrapper msg, MsgStopTradingAccount @event)
         {
             try
             {
                 var response = new MsgStopTradingAccountResponse()
                 {
                     Ts = DateTime.UtcNow.Ticks,
-                    ServiceName = "fefefe",
-                    ServiceUrl = "efwfewfw",
-                    ServiceVersion = "hbfewbifwefbw",
+                    TradingAccountId = @event.TradingAccountId,
+                    TradingAccountProvider = "Provider",
+                    BrokerId = 0,
+                    Message = "Trading account stopped successfully."
                 };
-                
+
                 _engine.Disconnect(@event, msg.OrganizationId, msg.UserId);
 
                 _eventGateway.Send(response, 
-                    organizationId:msg.OrganizationId,
-                    severity:"Warning",
-                    actionId:msg.ActionId,
-                    userId:msg.UserId,
-                    nodeId:msg.NodeId,
-                    userEmail:msg.UserEmail
+                    organizationId: msg.OrganizationId,
+                    severity: "Info",
+                    actionId: msg.ActionId,
+                    userId: msg.UserId,
+                    nodeId: msg.NodeId,
+                    userEmail: msg.UserEmail
                 );
             }
             catch (System.Exception e)
@@ -93,67 +98,121 @@ namespace HFTbridge.Node.Agent
                 var response = new MsgStopTradingAccountResponse()
                 {
                     Ts = DateTime.UtcNow.Ticks,
-                    ServiceName = "fefefe",
-                    ServiceUrl = "efwfewfw",
-                    ServiceVersion = "hbfewbifwefbw",
+                    TradingAccountId = @event.TradingAccountId,
+                    TradingAccountProvider = "prvider",
+                    BrokerId = 0,
+                    Message = $"Failed to stop trading account: {e.Message}"
                 };
-                
+
                 _eventGateway.Send(response, 
-                    organizationId:msg.OrganizationId,
-                    severity:"Warning",
-                    actionId:msg.ActionId,
-                    userId:msg.UserId,
-                    nodeId:msg.NodeId,
-                    userEmail:msg.UserEmail
+                    organizationId: msg.OrganizationId,
+                    severity: "Error",
+                    actionId: msg.ActionId,
+                    userId: msg.UserId,
+                    nodeId: msg.NodeId,
+                    userEmail: msg.UserEmail
                 );
             }
-            
-            
         }
 
-         private void HandleMsg (RabbitMsgWrapper msg, MsgSubscribeSymbol @event)
+        private void HandleMsg(RabbitMsgWrapper msg, MsgSubscribeSymbol @event)
         {
-            var response = new MsgSubscribeSymbolResponse()
+            try
             {
-                Ts = DateTime.UtcNow.Ticks,
-                ServiceName = "fefefe",
-                ServiceUrl = "efwfewfw",
-                ServiceVersion = "hbfewbifwefbw",
-            };
+                var response = new MsgSubscribeSymbolResponse()
+                {
+                    Ts = DateTime.UtcNow.Ticks,
+                    TradingAccountId = @event.TradingAccountId,
+                    TradingAccountProvider = "@event.TradingAccountProvider",
+                    BrokerId = 0,
+                    SymbolKey = @event.SymbolKey,
+                    SymbolRouting = @event.SymbolRouting,
+                    Digits = @event.Digits,
+                    Message = "Symbol subscribed successfully."
+                };
 
-            _eventGateway.Send(response, 
-                organizationId:msg.OrganizationId,
-                severity:"Warning",
-                actionId:msg.ActionId,
-                userId:msg.UserId,
-                nodeId:msg.NodeId,
-                userEmail:msg.UserEmail
-            );
-            
+                _eventGateway.Send(response, 
+                    organizationId: msg.OrganizationId,
+                    severity: "Info",
+                    actionId: msg.ActionId,
+                    userId: msg.UserId,
+                    nodeId: msg.NodeId,
+                    userEmail: msg.UserEmail
+                );
+            }
+            catch (System.Exception e)
+            {
+                var response = new MsgSubscribeSymbolResponse()
+                {
+                    Ts = DateTime.UtcNow.Ticks,
+                    TradingAccountId = @event.TradingAccountId,
+                    TradingAccountProvider = "Pr",
+                    BrokerId = 0,
+                    SymbolKey = @event.SymbolKey,
+                    SymbolRouting = @event.SymbolRouting,
+                    Digits = @event.Digits,
+                    Message = $"Failed to subscribe symbol: {e.Message}"
+                };
+
+                _eventGateway.Send(response, 
+                    organizationId: msg.OrganizationId,
+                    severity: "Error",
+                    actionId: msg.ActionId,
+                    userId: msg.UserId,
+                    nodeId: msg.NodeId,
+                    userEmail: msg.UserEmail
+                );
+            }
         }
 
-        private void HandleMsg (RabbitMsgWrapper msg, MsgUnSubscribeSymbol @event)
+        private void HandleMsg(RabbitMsgWrapper msg, MsgUnSubscribeSymbol @event)
         {
-            var response = new MsgUnSubscribeSymbolResponse()
+            try
             {
-                Ts = DateTime.UtcNow.Ticks,
-                ServiceName = "fefefe",
-                ServiceUrl = "efwfewfw",
-                ServiceVersion = "hbfewbifwefbw",
-            };
-            
-            _eventGateway.Send(response, 
-                organizationId:msg.OrganizationId,
-                severity:"Warning",
-                actionId:msg.ActionId,
-                userId:msg.UserId,
-                nodeId:msg.NodeId,
-                userEmail:msg.UserEmail
-            );
-            
+                var response = new MsgUnSubscribeSymbolResponse()
+                {
+                    Ts = DateTime.UtcNow.Ticks,
+                    TradingAccountId = @event.TradingAccountId,
+                    TradingAccountProvider = "fsf",
+                    BrokerId = 0,
+                    SymbolKey = @event.SymbolKey,
+                    SymbolRouting = "Routing",
+                    Digits = 0,
+                    Message = "Symbol unsubscribed successfully."
+                };
+
+                _eventGateway.Send(response, 
+                    organizationId: msg.OrganizationId,
+                    severity: "Info",
+                    actionId: msg.ActionId,
+                    userId: msg.UserId,
+                    nodeId: msg.NodeId,
+                    userEmail: msg.UserEmail
+                );
+            }
+            catch (System.Exception e)
+            {
+                var response = new MsgUnSubscribeSymbolResponse()
+                {
+                    Ts = DateTime.UtcNow.Ticks,
+                    TradingAccountId = @event.TradingAccountId,
+                    TradingAccountProvider = "Fefe",
+                    BrokerId = 0,
+                    SymbolKey = @event.SymbolKey,
+                    SymbolRouting = "Routing",
+                    Digits = 0,
+                    Message = $"Failed to unsubscribe symbol: {e.Message}"
+                };
+
+                _eventGateway.Send(response, 
+                    organizationId: msg.OrganizationId,
+                    severity: "Error",
+                    actionId: msg.ActionId,
+                    userId: msg.UserId,
+                    nodeId: msg.NodeId,
+                    userEmail: msg.UserEmail
+                );
+            }
         }
-
-    
-
     }
 }
