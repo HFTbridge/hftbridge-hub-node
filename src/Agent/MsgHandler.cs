@@ -7,19 +7,26 @@ namespace HFTbridge.Node.Agent
     {
         private EventGateway _eventGateway;
         private readonly HFTBridgeEngine _engine;
+        private readonly string _nodeId;
+        private readonly string _organizationId;
 
-        public MsgHandler(EventGateway eventGateway, HFTBridgeEngine engine)
+        public MsgHandler(EventGateway eventGateway, HFTBridgeEngine engine, string nodeId, string organizationId)
         {
             _engine = engine;
             _eventGateway = eventGateway;
-            _eventGateway.EventMsgStartTradingAccount += HandleMsg;
-            _eventGateway.EventMsgStopTradingAccount += HandleMsg;
-            _eventGateway.EventMsgSubscribeSymbol += HandleMsg;
-            _eventGateway.EventMsgUnSubscribeSymbol += HandleMsg;
+            _nodeId = nodeId;
+            _organizationId = organizationId;
+
+            _eventGateway.EventMsgStartTradingAccountRequest += HandleMsg;
+            _eventGateway.EventMsgStopTradingAccountRequest += HandleMsg;
+            _eventGateway.EventMsgSubscribeSymbolRequest += HandleMsg;
+            _eventGateway.EventMsgUnSubscribeSymbolRequest += HandleMsg;
+
+            _engine.OnMsgMDRoutingBulk += HandleMsg;
         }
 
         // Handlers
-        private void HandleMsg(RabbitMsgWrapper msg, MsgStartTradingAccount @event)
+        private void HandleMsg(RabbitMsgWrapper msg, MsgStartTradingAccountRequest @event)
         {
             try
             {
@@ -69,7 +76,7 @@ namespace HFTbridge.Node.Agent
             }
         }
 
-        private void HandleMsg(RabbitMsgWrapper msg, MsgStopTradingAccount @event)
+        private void HandleMsg(RabbitMsgWrapper msg, MsgStopTradingAccountRequest @event)
         {
             try
             {
@@ -115,7 +122,7 @@ namespace HFTbridge.Node.Agent
             }
         }
 
-        private void HandleMsg(RabbitMsgWrapper msg, MsgSubscribeSymbol @event)
+        private void HandleMsg(RabbitMsgWrapper msg, MsgSubscribeSymbolRequest @event)
         {
             try
             {
@@ -165,7 +172,7 @@ namespace HFTbridge.Node.Agent
             }
         }
 
-        private void HandleMsg(RabbitMsgWrapper msg, MsgUnSubscribeSymbol @event)
+        private void HandleMsg(RabbitMsgWrapper msg, MsgUnSubscribeSymbolRequest @event)
         {
             try
             {
@@ -212,6 +219,25 @@ namespace HFTbridge.Node.Agent
                     nodeId: msg.NodeId,
                     userEmail: msg.UserEmail
                 );
+            }
+        }
+
+        private void HandleMsg(MsgMDRoutingBulk @event)
+        {
+            try
+            {
+                _eventGateway.Send(@event, 
+                    organizationId: _organizationId,
+                    severity: "Debug",
+                    actionId: "MDBULK",
+                    userId: "System",
+                    nodeId: _nodeId,
+                    userEmail: "System"
+                );
+            }
+            catch (System.Exception e)
+            {
+                Console.WriteLine("ERROR PUBLISHING MARKET DATA TO MOTHERSHIP !!!!!!!!!");
             }
         }
     }

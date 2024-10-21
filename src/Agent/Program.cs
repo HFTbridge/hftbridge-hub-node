@@ -9,14 +9,13 @@ namespace HFTbridge.Node.Agent
         static async Task Main(string[] args)
         {
             var organizationId = "PUBLIC";
-            var nodeId = "MIKE-DEV";
+            var nodeId = "MIKE-DEV-2";
 
             var engine = new HFTBridgeEngine();
             
             var mothershipService = new MothershipService("https://hub.agent.hft-app.net", nodeId, organizationId, new SyncWorkerHandler(organizationId, nodeId, engine));
 
-         
-            var handler = new MsgHandler(mothershipService._eventGateway, engine);
+            var handler = new MsgHandler(mothershipService._eventGateway, engine, nodeId, organizationId);
             mothershipService.Start();
 
 

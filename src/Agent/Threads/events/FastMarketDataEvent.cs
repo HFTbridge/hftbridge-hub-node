@@ -1,3 +1,5 @@
+using HFTbridge.Msg;
+
 namespace HFTbridge.Agent
 {
     public class FastMarketDataEvent
@@ -15,6 +17,7 @@ namespace HFTbridge.Agent
 
         public FastMarketDataEvent()
         {
+            
         }
 
         public void CalculateProcessingTimeMs()
@@ -33,6 +36,27 @@ namespace HFTbridge.Agent
             Bid = bid;
             Digits = digits;
             SymbolRouting = symbolRouting;
+        }
+
+        // Create a dummy MsgMDRouting object
+        public SubMsgMDRouting ToMsg()
+        {
+
+            var msg = new SubMsgMDRouting(
+                IncomingTickTs: this.IncomingTickTs,
+                ProcessedTickTs: this.ProcessedTickTs,
+                ProcessingMs: this.ProcessingMs,
+                SymbolKey: this.SymbolKey,
+                SymbolRouting: this.SymbolRouting,
+                Digits: this.Digits,
+                Ask: this.Ask,
+                Bid: this.Bid,
+                AveragePrice: (this.Ask + this.Bid) / 2,
+                Spread: this.Ask - this.Bid,
+                TradingConnectionQuotes: new SubMsgMDRoutingItem[0]
+            );
+
+            return msg;
         }
     }
 }

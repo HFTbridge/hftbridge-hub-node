@@ -9,7 +9,7 @@ namespace HFTbridge.Msg;
 
 public static class MsgSchema
 {
-    public static int Version = 23;
+    public static int Version = 24;
 
 //--------------------------------------------------------------------------------------------------------------------------------------------
 //------[ DECODE MESSAGE FROM RABBIT MQ LIBRARAY  ]
@@ -163,7 +163,7 @@ public record struct RabbitMsgWrapper(
 //--------------------------------------------------------------------------------------------------------------------------------------------
 //------[ DEFINITIONS OF ALL INTERNAL MESSAGES TO BE Serialized to ByteMsg using Message Pack  ]
 //--------------------------------------------------------------------------------------------------------------------------------------------
-    
+
 
 [MessagePackObject]
 public record struct MsgRegisterMicroService(
@@ -179,7 +179,7 @@ public record struct MsgMicroServiceHealthSummaryRequest(
     [property: Key(0)] long Ts,
     [property: Key(1)] string Text
 );
-    
+  
 
 [MessagePackObject]
 public record struct MsgMicroServiceHealthSummaryNotification(
@@ -208,7 +208,6 @@ public record struct MsgMicroServiceHealthSummaryNotification(
     [property: Key(22)] long CurrentCountConnectedStreamClients
 );
     
-
 [MessagePackObject]
 public record struct MsgMicroServiceHealthSummarySnapshot(
     [property: Key(0)] long Ts,
@@ -226,22 +225,42 @@ public record struct MsgChat(
 [MessagePackObject]
 public record struct MsgTradingConnectionStatus(
     [property: Key(0)] long Ts,
-    [property: Key(1)] string ServiceName,
-    [property: Key(2)] string ServiceUrl,
-    [property: Key(3)] string ServiceVersion
+    [property: Key(1)] string TradingAccountId,
+    [property: Key(2)] string Status,
+    [property: Key(3)] bool IsConnected,
+    [property: Key(4)] bool IsError,
+    [property: Key(5)] string ErrorMessage
+
+
 );
     
 
 [MessagePackObject]
-public record struct MsgSymbolStatus(
+public record struct MsgTradingConnectionSubscriptionStatus(
     [property: Key(0)] long Ts,
-    [property: Key(1)] string ServiceName,
-    [property: Key(2)] string ServiceUrl,
-    [property: Key(3)] string ServiceVersion
+    [property: Key(1)] string TradingAccountId,
+    [property: Key(2)] string SymbolKey,
+    [property: Key(3)] string SymbolRouting,    
+    [property: Key(4)] string Status,
+    [property: Key(5)] bool IsSubscribed,
+    [property: Key(6)] bool IsError,
+    [property: Key(7)] string ErrorMessage
+);
+    
+
+[MessagePackObject]
+public record struct MsgTradingConnectionTradeStatus(
+    [property: Key(0)] long Ts,
+    [property: Key(1)] string TradingAccountId,
+    [property: Key(2)] string SymbolKey,
+    [property: Key(3)] string SymbolRouting, 
+    [property: Key(4)] string TradeId,    
+    [property: Key(5)] string Status,
+    [property: Key(6)] bool IsBuy
 );
     
 [MessagePackObject]
-public record struct MsgStartTradingAccount(
+public record struct MsgStartTradingAccountRequest(
     [property: Key(0)] long Ts,
     [property: Key(1)] string TradingAccountId,
     [property: Key(2)] string TradingAccountProvider,
@@ -259,13 +278,13 @@ public record struct SubMsgStartTradingAccountSubscribeItem(
 );
     
 [MessagePackObject]
-public record struct MsgStopTradingAccount(
+public record struct MsgStopTradingAccountRequest(
     [property: Key(0)] long Ts,
     [property: Key(1)] string TradingAccountId
 );
     
 [MessagePackObject]
-public record struct MsgSubscribeSymbol(
+public record struct MsgSubscribeSymbolRequest(
     [property: Key(0)] long Ts,
     [property: Key(1)] string TradingAccountId,
     [property: Key(2)] string SymbolKey,
@@ -274,7 +293,7 @@ public record struct MsgSubscribeSymbol(
 );
     
 [MessagePackObject]
-public record struct MsgUnSubscribeSymbol(
+public record struct MsgUnSubscribeSymbolRequest(
     [property: Key(0)] long Ts,
     [property: Key(1)] string TradingAccountId,
     [property: Key(2)] string SymbolKey
@@ -282,11 +301,27 @@ public record struct MsgUnSubscribeSymbol(
     
 
 [MessagePackObject]
-public record struct MsgOpenTradeManual(
+public record struct MsgOpenTradeManualRequest(
     [property: Key(0)] long Ts,
-    [property: Key(1)] string ServiceName,
-    [property: Key(2)] string ServiceUrl,
-    [property: Key(3)] string ServiceVersion
+    [property: Key(1)] string TradingAccountId,
+    [property: Key(2)] string SymbolKey,
+    [property: Key(3)] int Digits,
+    [property: Key(4)] double LotSize,
+    [property: Key(5)] bool IsBuy,
+    [property: Key(6)] double Price
+);
+    
+
+[MessagePackObject]
+public record struct MsgCloseTradeManualRequest(
+    [property: Key(0)] long Ts,
+    [property: Key(1)] string TradingAccountId,
+    [property: Key(2)] string TradeId,
+    [property: Key(3)] string SymbolKey,
+    [property: Key(4)] int Digits,
+    [property: Key(5)] double LotSize,
+    [property: Key(6)] bool IsBuy,
+    [property: Key(7)] double Price
 );
     
 
@@ -341,322 +376,78 @@ public record struct MsgUnSubscribeSymbolResponse(
 [MessagePackObject]
 public record struct MsgOpenTradeManualResponse(
     [property: Key(0)] long Ts,
-    [property: Key(1)] string ServiceName,
-    [property: Key(2)] string ServiceUrl,
-    [property: Key(3)] string ServiceVersion
-);
-    
-
-[MessagePackObject]
-public record struct MsgMDTick(
-    [property: Key(0)] long Ts,
-    [property: Key(1)] long TickNr,
-    [property: Key(2)] string TradingAccountId,
-    [property: Key(3)] string SymboKey,
-    [property: Key(4)] string SymbolRouting,
-    [property: Key(5)] double Ask,
-    [property: Key(6)] double Bid
-);
-    
-
-[MessagePackObject]
-public record struct MsgMDSnapshot(
-    [property: Key(0)] long Ts,
-    [property: Key(1)] int Tps,
-    [property: Key(2)] int Tpm,
-    [property: Key(3)] SubMsgMDSnapshotItem[] Items
-);
-
-[MessagePackObject]
-public record struct SubMsgMDSnapshotItem(
-    [property: Key(0)] long Ts,
-    [property: Key(1)] long TickNr,
-    [property: Key(2)] int Tps,
-    [property: Key(3)] int Tpm,
-    [property: Key(4)] string TradingAccountId,
-    [property: Key(5)] string SymboKey,
-    [property: Key(6)] string SymbolRouting,
-    [property: Key(7)] double Ask,
-    [property: Key(8)] double Bid,
-    [property: Key(9)] double Delta5Sec,
-    [property: Key(10)] double Delta30Sec,
-    [property: Key(11)] double Delta60Sec
-    
-);
-    
-
-[MessagePackObject]
-public record struct MsgMDRouting(
-    [property: Key(0)] long IncomingTickTs,
-    [property: Key(1)] long ProcessedTickTs,
-    [property: Key(2)] double ProcessingMs,
+    [property: Key(1)] string TradingAccountId,
+    [property: Key(2)] string TradeId,
     [property: Key(3)] string SymbolKey,
-    [property: Key(4)] string SymbolRouting,
-    [property: Key(5)] int Digits,
-    [property: Key(6)] double Ask,
-    [property: Key(7)] double Bid,
-    [property: Key(8)] double AveragePrice,
-    [property: Key(9)] double Spread,
-    [property: Key(10)] SubMsgMDRoutingItem[] TradingConnectionQuotes
+    [property: Key(4)] int Digits,
+    [property: Key(5)] double LotSize,
+    [property: Key(6)] bool IsBuy,
+    [property: Key(7)] double Price,
+    [property: Key(8)] bool IsError,
+    [property: Key(9)] string ErrorMessage
+);
+    
+
+[MessagePackObject]
+public record struct MsgCloseTradeManualResponse(
+    [property: Key(0)] long Ts,
+    [property: Key(1)] string TradingAccountId,
+    [property: Key(2)] string TradeId,
+    [property: Key(3)] string SymbolKey,
+    [property: Key(4)] int Digits,
+    [property: Key(5)] double LotSize,
+    [property: Key(6)] bool IsBuy,
+    [property: Key(7)] double Price,
+    [property: Key(8)] bool IsError,
+    [property: Key(9)] string ErrorMessage
+
+
+);
+    
+
+[MessagePackObject]
+public record struct MsgMDRoutingBulk(
+  [property: Key(0)] long Ts,
+  [property: Key(1)] SubMsgMDRouting[] Ticks
+);
+
+[MessagePackObject]
+public record struct SubMsgMDRouting(
+  [property: Key(0)] long IncomingTickTs,
+  [property: Key(1)] long ProcessedTickTs,
+  [property: Key(2)] double ProcessingMs,
+  [property: Key(3)] string SymbolKey,
+  [property: Key(4)] string SymbolRouting,
+  [property: Key(5)] int Digits,
+  [property: Key(6)] double Ask,
+  [property: Key(7)] double Bid,
+  [property: Key(8)] double AveragePrice,
+  [property: Key(9)] double Spread,
+  [property: Key(10)] SubMsgMDRoutingItem[] TradingConnectionQuotes
 );
 
 [MessagePackObject]
 public record struct SubMsgMDRoutingItem(
-    [property: Key(0)] long Ts,
-    [property: Key(1)] string OrganizationId,
-    [property: Key(2)] string TradingAccountId,
-    [property: Key(3)] string SymbolKey,
-    [property: Key(4)] string SymbolRouting,
-    [property: Key(5)] int Digits,
-    [property: Key(6)] double Ask,
-    [property: Key(7)] double Bid,
-    [property: Key(8)] double AveragePrice,
-    [property: Key(9)] double Spread,
-    [property: Key(10)] double AskOffset,
-    [property: Key(11)] double BidOffset,
-    [property: Key(12)] double AskAfterOffset,
-    [property: Key(13)] double BidAfterOffset,
-    [property: Key(14)] double BuyGap,
-    [property: Key(15)] double SellGap,
-    [property: Key(16)] bool IsBuyGap,
-    [property: Key(17)] bool IsSellGap
+  [property: Key(0)] long Ts,
+  [property: Key(1)] string OrganizationId,
+  [property: Key(2)] string TradingAccountId,
+  [property: Key(3)] string SymbolKey,
+  [property: Key(4)] string SymbolRouting,
+  [property: Key(5)] int Digits,
+  [property: Key(6)] double Ask,
+  [property: Key(7)] double Bid,
+  [property: Key(8)] double AveragePrice,
+  [property: Key(9)] double Spread,
+  [property: Key(10)] double AskOffset,
+  [property: Key(11)] double BidOffset,
+  [property: Key(12)] double AskAfterOffset,
+  [property: Key(13)] double BidAfterOffset,
+  [property: Key(14)] double BuyGap,
+  [property: Key(15)] double SellGap,
+  [property: Key(16)] bool IsBuyGap,
+  [property: Key(17)] bool IsSellGap
 );
-    
-
-[MessagePackObject]
-public record struct MsgTDTradeOpened(
-    [property: Key(0)] long Ts,
-    [property: Key(1)] string ServiceName,
-    [property: Key(2)] string ServiceUrl,
-    [property: Key(3)] string ServiceVersion
-);
-    
-
-[MessagePackObject]
-public record struct MsgTDTradeClosed(
-    [property: Key(0)] long Ts,
-    [property: Key(1)] string ServiceName,
-    [property: Key(2)] string ServiceUrl,
-    [property: Key(3)] string ServiceVersion
-);
-    
-
-[MessagePackObject]
-public record struct MsgTDSnapshot(
-    [property: Key(0)] long Ts,
-    [property: Key(1)] string ServiceName,
-    [property: Key(2)] string ServiceUrl,
-    [property: Key(3)] string ServiceVersion
-);
-    
-
-[MessagePackObject]
-public record struct MsgSyncTradingAccount(
-    [property: Key(0)] long Ts,
-    [property: Key(1)] string ServiceName,
-    [property: Key(2)] string ServiceUrl,
-    [property: Key(3)] string ServiceVersion
-);
-    
-
-[MessagePackObject]
-public record struct MsgStartingDC(
-    [property: Key(0)] long Ts,
-    [property: Key(1)] string ServiceName,
-    [property: Key(2)] string ServiceUrl,
-    [property: Key(3)] string ServiceVersion
-);
-    
-
-[MessagePackObject]
-public record struct MsgStartedDC(
-    [property: Key(0)] long Ts,
-    [property: Key(1)] string ServiceName,
-    [property: Key(2)] string ServiceUrl,
-    [property: Key(3)] string ServiceVersion
-);
-    
-
-[MessagePackObject]
-public record struct MsgRestartingDC(
-    [property: Key(0)] long Ts,
-    [property: Key(1)] string ServiceName,
-    [property: Key(2)] string ServiceUrl,
-    [property: Key(3)] string ServiceVersion
-);
-    
-
-[MessagePackObject]
-public record struct MsgFailedToStartDC(
-    [property: Key(0)] long Ts,
-    [property: Key(1)] string ServiceName,
-    [property: Key(2)] string ServiceUrl,
-    [property: Key(3)] string ServiceVersion
-);
-    
-
-[MessagePackObject]
-public record struct MsgDCClientConnected(
-    [property: Key(0)] long Ts,
-    [property: Key(1)] string ServiceName,
-    [property: Key(2)] string ServiceUrl,
-    [property: Key(3)] string ServiceVersion
-);
-    
-
-[MessagePackObject]
-public record struct MsgDCClientDisconnected(
-    [property: Key(0)] long Ts,
-    [property: Key(1)] string ServiceName,
-    [property: Key(2)] string ServiceUrl,
-    [property: Key(3)] string ServiceVersion
-);
-    
-
-[MessagePackObject]
-public record struct MsgDCMDSnapshot(
-    [property: Key(0)] long Ts,
-    [property: Key(1)] int TPS,
-    [property: Key(2)] int TPM,
-    [property: Key(3)] int Symbols,
-    [property: Key(4)] int Providers
-);
-    
-
-[MessagePackObject]
-public record struct MsgDCMDTick(
-    [property: Key(0)] long Ts,
-    [property: Key(1)] string SymbolKey,
-    [property: Key(2)] string SymbolRouting
-);
-    
-
-[MessagePackObject]
-public record struct MsgDCRequestRestartFeed(
-    [property: Key(0)] long Ts,
-    [property: Key(1)] string DcId
-);
-    
-
-[MessagePackObject]
-public record struct MsgDCRequestStartFeed(
-    [property: Key(0)] long Ts,
-    [property: Key(1)] string DcId
-);
-    
-
-[MessagePackObject]
-public record struct MsgDCRequestStopFeed(
-    [property: Key(0)] long Ts,
-    [property: Key(1)] string DcId
-);
-    
-
-[MessagePackObject]
-public record struct MsgDCRequestSubscribeAllSymbol(
-    [property: Key(0)] long Ts,
-    [property: Key(1)] string DcId
-);
-    
-
-[MessagePackObject]
-public record struct MsgDCRequestSubscribeSymbol(
-    [property: Key(0)] long Ts,
-    [property: Key(1)] string DcId,
-    [property: Key(2)] string SymbolKey
-);
-    
-
-[MessagePackObject]
-public record struct MsgDCRequestUnSubscribeAllSymbol(
-    [property: Key(0)] long Ts,
-    [property: Key(1)] string DcId
-);
-    
-
-[MessagePackObject]
-public record struct MsgDCRequestUnSubscribeSymbol(
-    [property: Key(0)] long Ts,
-    [property: Key(1)] string DcId,
-    [property: Key(2)] string SymbolKey
-);
-    
-
-[MessagePackObject]
-public record struct MsgDCResponseRestartFeed(
-    [property: Key(0)] long Ts,
-    [property: Key(1)] string DcId,
-    [property: Key(2)] bool IsSuccess
-);
-    
-
-[MessagePackObject]
-public record struct MsgDCResponseStartFeed(
-    [property: Key(0)] long Ts,
-    [property: Key(1)] string DcId,
-    [property: Key(2)] bool IsSuccess
-);
-    
-
-[MessagePackObject]
-public record struct MsgDCResponseStopFeed(
-    [property: Key(0)] long Ts,
-    [property: Key(1)] string DcId,
-    [property: Key(2)] bool IsSuccess
-);
-    
-
-[MessagePackObject]
-public record struct MsgDCResponseSubscribeAllSymbol(
-    [property: Key(0)] long Ts,
-    [property: Key(1)] string DcId,
-    [property: Key(2)] bool IsSuccess
-);
-    
-
-[MessagePackObject]
-public record struct MsgDCResponseSubscribeSymbol(
-    [property: Key(0)] long Ts,
-    [property: Key(1)] string DcId,
-    [property: Key(2)] string SymbolKey,
-    [property: Key(3)] bool IsSuccess
-);
-    
-
-[MessagePackObject]
-public record struct MsgDCResponseUnSubscribeAllSymbol(
-    [property: Key(0)] long Ts,
-    [property: Key(1)] string DcId,
-    [property: Key(2)] bool IsSuccess
-);
-    
-
-[MessagePackObject]
-public record struct MsgDCResponseUnSubscribeSymbol(
-    [property: Key(0)] long Ts,
-    [property: Key(1)] string DcId,
-    [property: Key(2)] string SymbolKey,
-    [property: Key(3)] bool IsSuccess
-);
-    
-[MessagePackObject]
-public record struct MsgSnapshotNodesSlim(
-    [property: Key(0)] long Ts,
-    [property: Key(1)] SubMsgSnapshotNodeSlimItem[] Nodes
-);
-
-[MessagePackObject]
-public record struct SubMsgSnapshotNodeSlimItem(
-    [property: Key(0)] string ConnectionId,
-    [property: Key(1)] string IpAddress,
-    [property: Key(2)] string OrganizationId,
-    [property: Key(3)] string Secret,
-    [property: Key(4)] string Version,
-    [property: Key(5)] string SchemaVersion,
-    [property: Key(6)] string SharedNodeVersion,
-    [property: Key(7)] string NodeId
-);
-    
+  
 [MessagePackObject]
 public record struct MsgSnapshotDCNodesSlim(
     [property: Key(0)] long Ts,
@@ -698,7 +489,25 @@ public record struct MsgSnapshotSingleDCNode(
 [MessagePackObject]
 public record struct MsgSnapshotGroupDCNodes(
     [property: Key(0)] long Ts,
-    [property: Key(1)] MsgSnapshotSingleDCNode[] Nodes
+    [property: Key(1)] List<MsgSnapshotSingleDCNode> Nodes
+);
+  
+[MessagePackObject]
+public record struct MsgSnapshotNodesSlim(
+    [property: Key(0)] long Ts,
+    [property: Key(1)] SubMsgSnapshotNodeSlimItem[] Nodes
+);
+
+[MessagePackObject]
+public record struct SubMsgSnapshotNodeSlimItem(
+    [property: Key(0)] string ConnectionId,
+    [property: Key(1)] string IpAddress,
+    [property: Key(2)] string OrganizationId,
+    [property: Key(3)] string Secret,
+    [property: Key(4)] string Version,
+    [property: Key(5)] string SchemaVersion,
+    [property: Key(6)] string SharedNodeVersion,
+    [property: Key(7)] string NodeId
 );
     
 [MessagePackObject]
@@ -728,14 +537,6 @@ public record struct SubMsgSnapshotFullSingleAgentNodeTC(
 );
     
 [MessagePackObject]
-public record struct MsgTCLog(
-    [property: Key(0)] long Ts,
-    [property: Key(1)] string TradingAccountId,
-    [property: Key(2)] int Severity,
-    [property: Key(3)] string Message
-);
-    
-[MessagePackObject]
 public record struct MsgSnapshotSingleAgentLiveTrades(
     [property: Key(0)] long Ts,
     [property: Key(1)] double TotalPnL,
@@ -749,15 +550,15 @@ public record struct SubMsgSnapshotSingleAgentLiveTradesItem(
     [property: Key(0)] long TradeOpenedTs,    
     [property: Key(1)] string OrganizationId,
     [property: Key(2)] string TradingAccountId,
-    [property: Key(1)] string TradeId,
-    [property: Key(2)] string TradeTicket,
-    [property: Key(3)] string Direction,
-    [property: Key(4)] string SymbolKey,
-    [property: Key(6)] int Digits,
-    [property: Key(7)] double OpenPrice,
-    [property: Key(8)] double PnL,
-    [property: Key(9)] double TP,
-    [property: Key(10)] double SL
+    [property: Key(3)] string TradeId,
+    [property: Key(4)] string TradeTicket,
+    [property: Key(5)] string Direction,
+    [property: Key(6)] string SymbolKey,
+    [property: Key(7)] int Digits,
+    [property: Key(8)] double OpenPrice,
+    [property: Key(9)] double PnL,
+    [property: Key(10)] double TP,
+    [property: Key(11)] double SL
 );
     
 [MessagePackObject]
@@ -788,6 +589,31 @@ public record struct SubMsgSnapshotSingleAgentMarketDataQuote(
     [property: Key(14)] double Delta5M
 );
     
+[MessagePackObject]
+public record struct MsgSnapshotSingleAgentInformation(
+    [property: Key(0)] long Ts,
+    [property: Key(1)] string OrganizationId,
+    [property: Key(2)] string NodeId,
+    [property: Key(3)] string OperatingSystem,
+    [property: Key(4)] string CountryCode,
+    [property: Key(5)] int TpsTotal,
+    [property: Key(6)] int TickToTradeMax,
+    [property: Key(7)] int TickToTradeMin,
+    [property: Key(8)] int TickToTradeAverage,
+    [property: Key(9)] int ConnectedTradingAccountsCount,
+    [property: Key(10)] int StreamingMarketDataSymbolsCount
+);
+
+
+    
+  [MessagePackObject]
+  public record struct MsgTCLog(
+      [property: Key(0)] long Ts,
+      [property: Key(1)] string TradingAccountId,
+      [property: Key(2)] int Severity,
+      [property: Key(3)] string Message
+  );
+      
 
 //--------------------------------------------------------------------------------------------------------------------------------------------
 //------[ MESSAGE EVENT GATEWAY WITH HANDLERS ON ALREADY DECODED EVENTS AND SEND FUNCTIONS TO PUBLISH EVENTS ]
@@ -838,56 +664,31 @@ public class EventGateway
     public event Action<RabbitMsgWrapper, MsgMicroServiceHealthSummarySnapshot> EventMsgMicroServiceHealthSummarySnapshot;
     public event Action<RabbitMsgWrapper, MsgChat> EventMsgChat;
     public event Action<RabbitMsgWrapper, MsgTradingConnectionStatus> EventMsgTradingConnectionStatus;
-    public event Action<RabbitMsgWrapper, MsgSymbolStatus> EventMsgSymbolStatus;
-    public event Action<RabbitMsgWrapper, MsgStartTradingAccount> EventMsgStartTradingAccount;
-    public event Action<RabbitMsgWrapper, MsgStopTradingAccount> EventMsgStopTradingAccount;
-    public event Action<RabbitMsgWrapper, MsgSubscribeSymbol> EventMsgSubscribeSymbol;
-    public event Action<RabbitMsgWrapper, MsgUnSubscribeSymbol> EventMsgUnSubscribeSymbol;
-    public event Action<RabbitMsgWrapper, MsgOpenTradeManual> EventMsgOpenTradeManual;
+    public event Action<RabbitMsgWrapper, MsgTradingConnectionSubscriptionStatus> EventMsgTradingConnectionSubscriptionStatus;
+    public event Action<RabbitMsgWrapper, MsgTradingConnectionTradeStatus> EventMsgTradingConnectionTradeStatus;
+    public event Action<RabbitMsgWrapper, MsgStartTradingAccountRequest> EventMsgStartTradingAccountRequest;
+    public event Action<RabbitMsgWrapper, MsgStopTradingAccountRequest> EventMsgStopTradingAccountRequest;
+    public event Action<RabbitMsgWrapper, MsgSubscribeSymbolRequest> EventMsgSubscribeSymbolRequest;
+    public event Action<RabbitMsgWrapper, MsgUnSubscribeSymbolRequest> EventMsgUnSubscribeSymbolRequest;
+    public event Action<RabbitMsgWrapper, MsgOpenTradeManualRequest> EventMsgOpenTradeManualRequest;
+    public event Action<RabbitMsgWrapper, MsgCloseTradeManualRequest> EventMsgCloseTradeManualRequest;
     public event Action<RabbitMsgWrapper, MsgStartTradingAccountResponse> EventMsgStartTradingAccountResponse;
     public event Action<RabbitMsgWrapper, MsgStopTradingAccountResponse> EventMsgStopTradingAccountResponse;
     public event Action<RabbitMsgWrapper, MsgSubscribeSymbolResponse> EventMsgSubscribeSymbolResponse;
     public event Action<RabbitMsgWrapper, MsgUnSubscribeSymbolResponse> EventMsgUnSubscribeSymbolResponse;
     public event Action<RabbitMsgWrapper, MsgOpenTradeManualResponse> EventMsgOpenTradeManualResponse;
-    public event Action<RabbitMsgWrapper, MsgMDTick> EventMsgMDTick;
-    public event Action<RabbitMsgWrapper, MsgMDSnapshot> EventMsgMDSnapshot;
-    public event Action<RabbitMsgWrapper, MsgMDRouting> EventMsgMDRouting;
-    public event Action<RabbitMsgWrapper, MsgTDTradeOpened> EventMsgTDTradeOpened;
-    public event Action<RabbitMsgWrapper, MsgTDTradeClosed> EventMsgTDTradeClosed;
-    public event Action<RabbitMsgWrapper, MsgTDSnapshot> EventMsgTDSnapshot;
-    public event Action<RabbitMsgWrapper, MsgSyncTradingAccount> EventMsgSyncTradingAccount;
-    public event Action<RabbitMsgWrapper, MsgStartingDC> EventMsgStartingDC;
-    public event Action<RabbitMsgWrapper, MsgStartedDC> EventMsgStartedDC;
-    public event Action<RabbitMsgWrapper, MsgRestartingDC> EventMsgRestartingDC;
-    public event Action<RabbitMsgWrapper, MsgFailedToStartDC> EventMsgFailedToStartDC;
-    public event Action<RabbitMsgWrapper, MsgDCClientConnected> EventMsgDCClientConnected;
-    public event Action<RabbitMsgWrapper, MsgDCClientDisconnected> EventMsgDCClientDisconnected;
-    public event Action<RabbitMsgWrapper, MsgDCMDSnapshot> EventMsgDCMDSnapshot;
-    public event Action<RabbitMsgWrapper, MsgDCMDTick> EventMsgDCMDTick;
-    public event Action<RabbitMsgWrapper, MsgDCRequestRestartFeed> EventMsgDCRequestRestartFeed;
-    public event Action<RabbitMsgWrapper, MsgDCRequestStartFeed> EventMsgDCRequestStartFeed;
-    public event Action<RabbitMsgWrapper, MsgDCRequestStopFeed> EventMsgDCRequestStopFeed;
-    public event Action<RabbitMsgWrapper, MsgDCRequestSubscribeAllSymbol> EventMsgDCRequestSubscribeAllSymbol;
-    public event Action<RabbitMsgWrapper, MsgDCRequestSubscribeSymbol> EventMsgDCRequestSubscribeSymbol;
-    public event Action<RabbitMsgWrapper, MsgDCRequestUnSubscribeAllSymbol> EventMsgDCRequestUnSubscribeAllSymbol;
-    public event Action<RabbitMsgWrapper, MsgDCRequestUnSubscribeSymbol> EventMsgDCRequestUnSubscribeSymbol;
-    public event Action<RabbitMsgWrapper, MsgDCResponseRestartFeed> EventMsgDCResponseRestartFeed;
-    public event Action<RabbitMsgWrapper, MsgDCResponseStartFeed> EventMsgDCResponseStartFeed;
-    public event Action<RabbitMsgWrapper, MsgDCResponseStopFeed> EventMsgDCResponseStopFeed;
-    public event Action<RabbitMsgWrapper, MsgDCResponseSubscribeAllSymbol> EventMsgDCResponseSubscribeAllSymbol;
-    public event Action<RabbitMsgWrapper, MsgDCResponseSubscribeSymbol> EventMsgDCResponseSubscribeSymbol;
-    public event Action<RabbitMsgWrapper, MsgDCResponseUnSubscribeAllSymbol> EventMsgDCResponseUnSubscribeAllSymbol;
-    public event Action<RabbitMsgWrapper, MsgDCResponseUnSubscribeSymbol> EventMsgDCResponseUnSubscribeSymbol;
-    public event Action<RabbitMsgWrapper, MsgSnapshotNodesSlim> EventMsgSnapshotNodesSlim;
+    public event Action<RabbitMsgWrapper, MsgCloseTradeManualResponse> EventMsgCloseTradeManualResponse;
+    public event Action<RabbitMsgWrapper, MsgMDRoutingBulk> EventMsgMDRoutingBulk;
     public event Action<RabbitMsgWrapper, MsgSnapshotDCNodesSlim> EventMsgSnapshotDCNodesSlim;
     public event Action<RabbitMsgWrapper, MsgSnapshotSingleDCNode> EventMsgSnapshotSingleDCNode;
     public event Action<RabbitMsgWrapper, MsgSnapshotGroupDCNodes> EventMsgSnapshotGroupDCNodes;
+    public event Action<RabbitMsgWrapper, MsgSnapshotNodesSlim> EventMsgSnapshotNodesSlim;
     public event Action<RabbitMsgWrapper, MsgSnapshotFullSingleAgentNode> EventMsgSnapshotFullSingleAgentNode;
-    public event Action<RabbitMsgWrapper, MsgTCLog> EventMsgTCLog;
     public event Action<RabbitMsgWrapper, MsgSnapshotSingleAgentLiveTrades> EventMsgSnapshotSingleAgentLiveTrades;
     public event Action<RabbitMsgWrapper, MsgSnapshotSingleAgentMarketData> EventMsgSnapshotSingleAgentMarketData;
-
-    
+    public event Action<RabbitMsgWrapper, MsgSnapshotSingleAgentInformation> EventMsgSnapshotSingleAgentInformation;
+    public event Action<RabbitMsgWrapper, MsgTCLog> EventMsgTCLog;
+  
     public string Send(MsgRegisterMicroService @event,
         long? ts = null,
         string severity = null,
@@ -1092,7 +893,7 @@ public class EventGateway
         return msg.ActionId;
     }
     
-    public string Send(MsgSymbolStatus @event,
+    public string Send(MsgTradingConnectionSubscriptionStatus @event,
         long? ts = null,
         string severity = null,
         string actionId = null,
@@ -1108,7 +909,7 @@ public class EventGateway
             Severity = severity ?? "Information",
             ActionId = actionId ?? Guid.NewGuid().ToString(),
             Exchange = "exchange.agent.status",
-            MessageType = "MsgSymbolStatus",
+            MessageType = "MsgTradingConnectionSubscriptionStatus",
             ByteMsg = MessagePackSerializer.Serialize(@event),
             OrganizationId = organizationId ?? "System",
             UserId = userId ?? "System",
@@ -1122,11 +923,45 @@ public class EventGateway
         };
 
         _publisher.Publish(msg);
-        //Console.WriteLine("Sent MsgSymbolStatus " + msg.ToString());
+        //Console.WriteLine("Sent MsgTradingConnectionSubscriptionStatus " + msg.ToString());
         return msg.ActionId;
     }
     
-    public string Send(MsgStartTradingAccount @event,
+    public string Send(MsgTradingConnectionTradeStatus @event,
+        long? ts = null,
+        string severity = null,
+        string actionId = null,
+        string organizationId = null,
+        string userId = null,
+        string nodeId = null,
+        string userEmail = null
+    )
+    {
+        var msg = new RabbitMsgWrapper()
+        {
+            Ts = ts ?? DateTime.UtcNow.Ticks,
+            Severity = severity ?? "Information",
+            ActionId = actionId ?? Guid.NewGuid().ToString(),
+            Exchange = "exchange.agent.status",
+            MessageType = "MsgTradingConnectionTradeStatus",
+            ByteMsg = MessagePackSerializer.Serialize(@event),
+            OrganizationId = organizationId ?? "System",
+            UserId = userId ?? "System",
+            NodeId = nodeId ?? "System",
+            UserEmail = userEmail ?? "System",
+
+            AppName = _eventGatewayConfiguration.ServiceName,
+            AppVersion = _eventGatewayConfiguration.ServiceVersion,
+            SharedVersion = _eventGatewayConfiguration.ServiceSharedVersion,
+            SchemaVersion = MsgSchema.Version.ToString()
+        };
+
+        _publisher.Publish(msg);
+        //Console.WriteLine("Sent MsgTradingConnectionTradeStatus " + msg.ToString());
+        return msg.ActionId;
+    }
+    
+    public string Send(MsgStartTradingAccountRequest @event,
         long? ts = null,
         string severity = null,
         string actionId = null,
@@ -1142,7 +977,7 @@ public class EventGateway
             Severity = severity ?? "Information",
             ActionId = actionId ?? Guid.NewGuid().ToString(),
             Exchange = "exchange.agent.request",
-            MessageType = "MsgStartTradingAccount",
+            MessageType = "MsgStartTradingAccountRequest",
             ByteMsg = MessagePackSerializer.Serialize(@event),
             OrganizationId = organizationId ?? "System",
             UserId = userId ?? "System",
@@ -1156,11 +991,11 @@ public class EventGateway
         };
 
         _publisher.Publish(msg);
-        //Console.WriteLine("Sent MsgStartTradingAccount " + msg.ToString());
+        //Console.WriteLine("Sent MsgStartTradingAccountRequest " + msg.ToString());
         return msg.ActionId;
     }
     
-    public string Send(MsgStopTradingAccount @event,
+    public string Send(MsgStopTradingAccountRequest @event,
         long? ts = null,
         string severity = null,
         string actionId = null,
@@ -1176,7 +1011,7 @@ public class EventGateway
             Severity = severity ?? "Information",
             ActionId = actionId ?? Guid.NewGuid().ToString(),
             Exchange = "exchange.agent.request",
-            MessageType = "MsgStopTradingAccount",
+            MessageType = "MsgStopTradingAccountRequest",
             ByteMsg = MessagePackSerializer.Serialize(@event),
             OrganizationId = organizationId ?? "System",
             UserId = userId ?? "System",
@@ -1190,11 +1025,11 @@ public class EventGateway
         };
 
         _publisher.Publish(msg);
-        //Console.WriteLine("Sent MsgStopTradingAccount " + msg.ToString());
+        //Console.WriteLine("Sent MsgStopTradingAccountRequest " + msg.ToString());
         return msg.ActionId;
     }
     
-    public string Send(MsgSubscribeSymbol @event,
+    public string Send(MsgSubscribeSymbolRequest @event,
         long? ts = null,
         string severity = null,
         string actionId = null,
@@ -1210,7 +1045,7 @@ public class EventGateway
             Severity = severity ?? "Information",
             ActionId = actionId ?? Guid.NewGuid().ToString(),
             Exchange = "exchange.agent.request",
-            MessageType = "MsgSubscribeSymbol",
+            MessageType = "MsgSubscribeSymbolRequest",
             ByteMsg = MessagePackSerializer.Serialize(@event),
             OrganizationId = organizationId ?? "System",
             UserId = userId ?? "System",
@@ -1224,11 +1059,11 @@ public class EventGateway
         };
 
         _publisher.Publish(msg);
-        //Console.WriteLine("Sent MsgSubscribeSymbol " + msg.ToString());
+        //Console.WriteLine("Sent MsgSubscribeSymbolRequest " + msg.ToString());
         return msg.ActionId;
     }
     
-    public string Send(MsgUnSubscribeSymbol @event,
+    public string Send(MsgUnSubscribeSymbolRequest @event,
         long? ts = null,
         string severity = null,
         string actionId = null,
@@ -1244,7 +1079,7 @@ public class EventGateway
             Severity = severity ?? "Information",
             ActionId = actionId ?? Guid.NewGuid().ToString(),
             Exchange = "exchange.agent.request",
-            MessageType = "MsgUnSubscribeSymbol",
+            MessageType = "MsgUnSubscribeSymbolRequest",
             ByteMsg = MessagePackSerializer.Serialize(@event),
             OrganizationId = organizationId ?? "System",
             UserId = userId ?? "System",
@@ -1258,11 +1093,11 @@ public class EventGateway
         };
 
         _publisher.Publish(msg);
-        //Console.WriteLine("Sent MsgUnSubscribeSymbol " + msg.ToString());
+        //Console.WriteLine("Sent MsgUnSubscribeSymbolRequest " + msg.ToString());
         return msg.ActionId;
     }
     
-    public string Send(MsgOpenTradeManual @event,
+    public string Send(MsgOpenTradeManualRequest @event,
         long? ts = null,
         string severity = null,
         string actionId = null,
@@ -1278,7 +1113,7 @@ public class EventGateway
             Severity = severity ?? "Information",
             ActionId = actionId ?? Guid.NewGuid().ToString(),
             Exchange = "exchange.agent.request",
-            MessageType = "MsgOpenTradeManual",
+            MessageType = "MsgOpenTradeManualRequest",
             ByteMsg = MessagePackSerializer.Serialize(@event),
             OrganizationId = organizationId ?? "System",
             UserId = userId ?? "System",
@@ -1292,7 +1127,41 @@ public class EventGateway
         };
 
         _publisher.Publish(msg);
-        //Console.WriteLine("Sent MsgOpenTradeManual " + msg.ToString());
+        //Console.WriteLine("Sent MsgOpenTradeManualRequest " + msg.ToString());
+        return msg.ActionId;
+    }
+    
+    public string Send(MsgCloseTradeManualRequest @event,
+        long? ts = null,
+        string severity = null,
+        string actionId = null,
+        string organizationId = null,
+        string userId = null,
+        string nodeId = null,
+        string userEmail = null
+    )
+    {
+        var msg = new RabbitMsgWrapper()
+        {
+            Ts = ts ?? DateTime.UtcNow.Ticks,
+            Severity = severity ?? "Information",
+            ActionId = actionId ?? Guid.NewGuid().ToString(),
+            Exchange = "exchange.agent.request",
+            MessageType = "MsgCloseTradeManualRequest",
+            ByteMsg = MessagePackSerializer.Serialize(@event),
+            OrganizationId = organizationId ?? "System",
+            UserId = userId ?? "System",
+            NodeId = nodeId ?? "System",
+            UserEmail = userEmail ?? "System",
+
+            AppName = _eventGatewayConfiguration.ServiceName,
+            AppVersion = _eventGatewayConfiguration.ServiceVersion,
+            SharedVersion = _eventGatewayConfiguration.ServiceSharedVersion,
+            SchemaVersion = MsgSchema.Version.ToString()
+        };
+
+        _publisher.Publish(msg);
+        //Console.WriteLine("Sent MsgCloseTradeManualRequest " + msg.ToString());
         return msg.ActionId;
     }
     
@@ -1466,7 +1335,41 @@ public class EventGateway
         return msg.ActionId;
     }
     
-    public string Send(MsgMDTick @event,
+    public string Send(MsgCloseTradeManualResponse @event,
+        long? ts = null,
+        string severity = null,
+        string actionId = null,
+        string organizationId = null,
+        string userId = null,
+        string nodeId = null,
+        string userEmail = null
+    )
+    {
+        var msg = new RabbitMsgWrapper()
+        {
+            Ts = ts ?? DateTime.UtcNow.Ticks,
+            Severity = severity ?? "Information",
+            ActionId = actionId ?? Guid.NewGuid().ToString(),
+            Exchange = "exchange.agent.response",
+            MessageType = "MsgCloseTradeManualResponse",
+            ByteMsg = MessagePackSerializer.Serialize(@event),
+            OrganizationId = organizationId ?? "System",
+            UserId = userId ?? "System",
+            NodeId = nodeId ?? "System",
+            UserEmail = userEmail ?? "System",
+
+            AppName = _eventGatewayConfiguration.ServiceName,
+            AppVersion = _eventGatewayConfiguration.ServiceVersion,
+            SharedVersion = _eventGatewayConfiguration.ServiceSharedVersion,
+            SchemaVersion = MsgSchema.Version.ToString()
+        };
+
+        _publisher.Publish(msg);
+        //Console.WriteLine("Sent MsgCloseTradeManualResponse " + msg.ToString());
+        return msg.ActionId;
+    }
+    
+    public string Send(MsgMDRoutingBulk @event,
         long? ts = null,
         string severity = null,
         string actionId = null,
@@ -1482,7 +1385,7 @@ public class EventGateway
             Severity = severity ?? "Information",
             ActionId = actionId ?? Guid.NewGuid().ToString(),
             Exchange = "exchange.agent.md",
-            MessageType = "MsgMDTick",
+            MessageType = "MsgMDRoutingBulk",
             ByteMsg = MessagePackSerializer.Serialize(@event),
             OrganizationId = organizationId ?? "System",
             UserId = userId ?? "System",
@@ -1496,993 +1399,7 @@ public class EventGateway
         };
 
         _publisher.Publish(msg);
-        //Console.WriteLine("Sent MsgMDTick " + msg.ToString());
-        return msg.ActionId;
-    }
-    
-    public string Send(MsgMDSnapshot @event,
-        long? ts = null,
-        string severity = null,
-        string actionId = null,
-        string organizationId = null,
-        string userId = null,
-        string nodeId = null,
-        string userEmail = null
-    )
-    {
-        var msg = new RabbitMsgWrapper()
-        {
-            Ts = ts ?? DateTime.UtcNow.Ticks,
-            Severity = severity ?? "Information",
-            ActionId = actionId ?? Guid.NewGuid().ToString(),
-            Exchange = "exchange.agent.md",
-            MessageType = "MsgMDSnapshot",
-            ByteMsg = MessagePackSerializer.Serialize(@event),
-            OrganizationId = organizationId ?? "System",
-            UserId = userId ?? "System",
-            NodeId = nodeId ?? "System",
-            UserEmail = userEmail ?? "System",
-
-            AppName = _eventGatewayConfiguration.ServiceName,
-            AppVersion = _eventGatewayConfiguration.ServiceVersion,
-            SharedVersion = _eventGatewayConfiguration.ServiceSharedVersion,
-            SchemaVersion = MsgSchema.Version.ToString()
-        };
-
-        _publisher.Publish(msg);
-        //Console.WriteLine("Sent MsgMDSnapshot " + msg.ToString());
-        return msg.ActionId;
-    }
-    
-    public string Send(MsgMDRouting @event,
-        long? ts = null,
-        string severity = null,
-        string actionId = null,
-        string organizationId = null,
-        string userId = null,
-        string nodeId = null,
-        string userEmail = null
-    )
-    {
-        var msg = new RabbitMsgWrapper()
-        {
-            Ts = ts ?? DateTime.UtcNow.Ticks,
-            Severity = severity ?? "Information",
-            ActionId = actionId ?? Guid.NewGuid().ToString(),
-            Exchange = "exchange.agent.md",
-            MessageType = "MsgMDRouting",
-            ByteMsg = MessagePackSerializer.Serialize(@event),
-            OrganizationId = organizationId ?? "System",
-            UserId = userId ?? "System",
-            NodeId = nodeId ?? "System",
-            UserEmail = userEmail ?? "System",
-
-            AppName = _eventGatewayConfiguration.ServiceName,
-            AppVersion = _eventGatewayConfiguration.ServiceVersion,
-            SharedVersion = _eventGatewayConfiguration.ServiceSharedVersion,
-            SchemaVersion = MsgSchema.Version.ToString()
-        };
-
-        _publisher.Publish(msg);
-        //Console.WriteLine("Sent MsgMDRouting " + msg.ToString());
-        return msg.ActionId;
-    }
-    
-    public string Send(MsgTDTradeOpened @event,
-        long? ts = null,
-        string severity = null,
-        string actionId = null,
-        string organizationId = null,
-        string userId = null,
-        string nodeId = null,
-        string userEmail = null
-    )
-    {
-        var msg = new RabbitMsgWrapper()
-        {
-            Ts = ts ?? DateTime.UtcNow.Ticks,
-            Severity = severity ?? "Information",
-            ActionId = actionId ?? Guid.NewGuid().ToString(),
-            Exchange = "exchange.agent.td",
-            MessageType = "MsgTDTradeOpened",
-            ByteMsg = MessagePackSerializer.Serialize(@event),
-            OrganizationId = organizationId ?? "System",
-            UserId = userId ?? "System",
-            NodeId = nodeId ?? "System",
-            UserEmail = userEmail ?? "System",
-
-            AppName = _eventGatewayConfiguration.ServiceName,
-            AppVersion = _eventGatewayConfiguration.ServiceVersion,
-            SharedVersion = _eventGatewayConfiguration.ServiceSharedVersion,
-            SchemaVersion = MsgSchema.Version.ToString()
-        };
-
-        _publisher.Publish(msg);
-        //Console.WriteLine("Sent MsgTDTradeOpened " + msg.ToString());
-        return msg.ActionId;
-    }
-    
-    public string Send(MsgTDTradeClosed @event,
-        long? ts = null,
-        string severity = null,
-        string actionId = null,
-        string organizationId = null,
-        string userId = null,
-        string nodeId = null,
-        string userEmail = null
-    )
-    {
-        var msg = new RabbitMsgWrapper()
-        {
-            Ts = ts ?? DateTime.UtcNow.Ticks,
-            Severity = severity ?? "Information",
-            ActionId = actionId ?? Guid.NewGuid().ToString(),
-            Exchange = "exchange.agent.td",
-            MessageType = "MsgTDTradeClosed",
-            ByteMsg = MessagePackSerializer.Serialize(@event),
-            OrganizationId = organizationId ?? "System",
-            UserId = userId ?? "System",
-            NodeId = nodeId ?? "System",
-            UserEmail = userEmail ?? "System",
-
-            AppName = _eventGatewayConfiguration.ServiceName,
-            AppVersion = _eventGatewayConfiguration.ServiceVersion,
-            SharedVersion = _eventGatewayConfiguration.ServiceSharedVersion,
-            SchemaVersion = MsgSchema.Version.ToString()
-        };
-
-        _publisher.Publish(msg);
-        //Console.WriteLine("Sent MsgTDTradeClosed " + msg.ToString());
-        return msg.ActionId;
-    }
-    
-    public string Send(MsgTDSnapshot @event,
-        long? ts = null,
-        string severity = null,
-        string actionId = null,
-        string organizationId = null,
-        string userId = null,
-        string nodeId = null,
-        string userEmail = null
-    )
-    {
-        var msg = new RabbitMsgWrapper()
-        {
-            Ts = ts ?? DateTime.UtcNow.Ticks,
-            Severity = severity ?? "Information",
-            ActionId = actionId ?? Guid.NewGuid().ToString(),
-            Exchange = "exchange.agent.td",
-            MessageType = "MsgTDSnapshot",
-            ByteMsg = MessagePackSerializer.Serialize(@event),
-            OrganizationId = organizationId ?? "System",
-            UserId = userId ?? "System",
-            NodeId = nodeId ?? "System",
-            UserEmail = userEmail ?? "System",
-
-            AppName = _eventGatewayConfiguration.ServiceName,
-            AppVersion = _eventGatewayConfiguration.ServiceVersion,
-            SharedVersion = _eventGatewayConfiguration.ServiceSharedVersion,
-            SchemaVersion = MsgSchema.Version.ToString()
-        };
-
-        _publisher.Publish(msg);
-        //Console.WriteLine("Sent MsgTDSnapshot " + msg.ToString());
-        return msg.ActionId;
-    }
-    
-    public string Send(MsgSyncTradingAccount @event,
-        long? ts = null,
-        string severity = null,
-        string actionId = null,
-        string organizationId = null,
-        string userId = null,
-        string nodeId = null,
-        string userEmail = null
-    )
-    {
-        var msg = new RabbitMsgWrapper()
-        {
-            Ts = ts ?? DateTime.UtcNow.Ticks,
-            Severity = severity ?? "Information",
-            ActionId = actionId ?? Guid.NewGuid().ToString(),
-            Exchange = "exchange.sync.trading.account",
-            MessageType = "MsgSyncTradingAccount",
-            ByteMsg = MessagePackSerializer.Serialize(@event),
-            OrganizationId = organizationId ?? "System",
-            UserId = userId ?? "System",
-            NodeId = nodeId ?? "System",
-            UserEmail = userEmail ?? "System",
-
-            AppName = _eventGatewayConfiguration.ServiceName,
-            AppVersion = _eventGatewayConfiguration.ServiceVersion,
-            SharedVersion = _eventGatewayConfiguration.ServiceSharedVersion,
-            SchemaVersion = MsgSchema.Version.ToString()
-        };
-
-        _publisher.Publish(msg);
-        //Console.WriteLine("Sent MsgSyncTradingAccount " + msg.ToString());
-        return msg.ActionId;
-    }
-    
-    public string Send(MsgStartingDC @event,
-        long? ts = null,
-        string severity = null,
-        string actionId = null,
-        string organizationId = null,
-        string userId = null,
-        string nodeId = null,
-        string userEmail = null
-    )
-    {
-        var msg = new RabbitMsgWrapper()
-        {
-            Ts = ts ?? DateTime.UtcNow.Ticks,
-            Severity = severity ?? "Information",
-            ActionId = actionId ?? Guid.NewGuid().ToString(),
-            Exchange = "exchange.dc.status",
-            MessageType = "MsgStartingDC",
-            ByteMsg = MessagePackSerializer.Serialize(@event),
-            OrganizationId = organizationId ?? "System",
-            UserId = userId ?? "System",
-            NodeId = nodeId ?? "System",
-            UserEmail = userEmail ?? "System",
-
-            AppName = _eventGatewayConfiguration.ServiceName,
-            AppVersion = _eventGatewayConfiguration.ServiceVersion,
-            SharedVersion = _eventGatewayConfiguration.ServiceSharedVersion,
-            SchemaVersion = MsgSchema.Version.ToString()
-        };
-
-        _publisher.Publish(msg);
-        //Console.WriteLine("Sent MsgStartingDC " + msg.ToString());
-        return msg.ActionId;
-    }
-    
-    public string Send(MsgStartedDC @event,
-        long? ts = null,
-        string severity = null,
-        string actionId = null,
-        string organizationId = null,
-        string userId = null,
-        string nodeId = null,
-        string userEmail = null
-    )
-    {
-        var msg = new RabbitMsgWrapper()
-        {
-            Ts = ts ?? DateTime.UtcNow.Ticks,
-            Severity = severity ?? "Information",
-            ActionId = actionId ?? Guid.NewGuid().ToString(),
-            Exchange = "exchange.dc.status",
-            MessageType = "MsgStartedDC",
-            ByteMsg = MessagePackSerializer.Serialize(@event),
-            OrganizationId = organizationId ?? "System",
-            UserId = userId ?? "System",
-            NodeId = nodeId ?? "System",
-            UserEmail = userEmail ?? "System",
-
-            AppName = _eventGatewayConfiguration.ServiceName,
-            AppVersion = _eventGatewayConfiguration.ServiceVersion,
-            SharedVersion = _eventGatewayConfiguration.ServiceSharedVersion,
-            SchemaVersion = MsgSchema.Version.ToString()
-        };
-
-        _publisher.Publish(msg);
-        //Console.WriteLine("Sent MsgStartedDC " + msg.ToString());
-        return msg.ActionId;
-    }
-    
-    public string Send(MsgRestartingDC @event,
-        long? ts = null,
-        string severity = null,
-        string actionId = null,
-        string organizationId = null,
-        string userId = null,
-        string nodeId = null,
-        string userEmail = null
-    )
-    {
-        var msg = new RabbitMsgWrapper()
-        {
-            Ts = ts ?? DateTime.UtcNow.Ticks,
-            Severity = severity ?? "Information",
-            ActionId = actionId ?? Guid.NewGuid().ToString(),
-            Exchange = "exchange.dc.status",
-            MessageType = "MsgRestartingDC",
-            ByteMsg = MessagePackSerializer.Serialize(@event),
-            OrganizationId = organizationId ?? "System",
-            UserId = userId ?? "System",
-            NodeId = nodeId ?? "System",
-            UserEmail = userEmail ?? "System",
-
-            AppName = _eventGatewayConfiguration.ServiceName,
-            AppVersion = _eventGatewayConfiguration.ServiceVersion,
-            SharedVersion = _eventGatewayConfiguration.ServiceSharedVersion,
-            SchemaVersion = MsgSchema.Version.ToString()
-        };
-
-        _publisher.Publish(msg);
-        //Console.WriteLine("Sent MsgRestartingDC " + msg.ToString());
-        return msg.ActionId;
-    }
-    
-    public string Send(MsgFailedToStartDC @event,
-        long? ts = null,
-        string severity = null,
-        string actionId = null,
-        string organizationId = null,
-        string userId = null,
-        string nodeId = null,
-        string userEmail = null
-    )
-    {
-        var msg = new RabbitMsgWrapper()
-        {
-            Ts = ts ?? DateTime.UtcNow.Ticks,
-            Severity = severity ?? "Information",
-            ActionId = actionId ?? Guid.NewGuid().ToString(),
-            Exchange = "exchange.dc.status",
-            MessageType = "MsgFailedToStartDC",
-            ByteMsg = MessagePackSerializer.Serialize(@event),
-            OrganizationId = organizationId ?? "System",
-            UserId = userId ?? "System",
-            NodeId = nodeId ?? "System",
-            UserEmail = userEmail ?? "System",
-
-            AppName = _eventGatewayConfiguration.ServiceName,
-            AppVersion = _eventGatewayConfiguration.ServiceVersion,
-            SharedVersion = _eventGatewayConfiguration.ServiceSharedVersion,
-            SchemaVersion = MsgSchema.Version.ToString()
-        };
-
-        _publisher.Publish(msg);
-        //Console.WriteLine("Sent MsgFailedToStartDC " + msg.ToString());
-        return msg.ActionId;
-    }
-    
-    public string Send(MsgDCClientConnected @event,
-        long? ts = null,
-        string severity = null,
-        string actionId = null,
-        string organizationId = null,
-        string userId = null,
-        string nodeId = null,
-        string userEmail = null
-    )
-    {
-        var msg = new RabbitMsgWrapper()
-        {
-            Ts = ts ?? DateTime.UtcNow.Ticks,
-            Severity = severity ?? "Information",
-            ActionId = actionId ?? Guid.NewGuid().ToString(),
-            Exchange = "exchange.dc.status",
-            MessageType = "MsgDCClientConnected",
-            ByteMsg = MessagePackSerializer.Serialize(@event),
-            OrganizationId = organizationId ?? "System",
-            UserId = userId ?? "System",
-            NodeId = nodeId ?? "System",
-            UserEmail = userEmail ?? "System",
-
-            AppName = _eventGatewayConfiguration.ServiceName,
-            AppVersion = _eventGatewayConfiguration.ServiceVersion,
-            SharedVersion = _eventGatewayConfiguration.ServiceSharedVersion,
-            SchemaVersion = MsgSchema.Version.ToString()
-        };
-
-        _publisher.Publish(msg);
-        //Console.WriteLine("Sent MsgDCClientConnected " + msg.ToString());
-        return msg.ActionId;
-    }
-    
-    public string Send(MsgDCClientDisconnected @event,
-        long? ts = null,
-        string severity = null,
-        string actionId = null,
-        string organizationId = null,
-        string userId = null,
-        string nodeId = null,
-        string userEmail = null
-    )
-    {
-        var msg = new RabbitMsgWrapper()
-        {
-            Ts = ts ?? DateTime.UtcNow.Ticks,
-            Severity = severity ?? "Information",
-            ActionId = actionId ?? Guid.NewGuid().ToString(),
-            Exchange = "exchange.dc.status",
-            MessageType = "MsgDCClientDisconnected",
-            ByteMsg = MessagePackSerializer.Serialize(@event),
-            OrganizationId = organizationId ?? "System",
-            UserId = userId ?? "System",
-            NodeId = nodeId ?? "System",
-            UserEmail = userEmail ?? "System",
-
-            AppName = _eventGatewayConfiguration.ServiceName,
-            AppVersion = _eventGatewayConfiguration.ServiceVersion,
-            SharedVersion = _eventGatewayConfiguration.ServiceSharedVersion,
-            SchemaVersion = MsgSchema.Version.ToString()
-        };
-
-        _publisher.Publish(msg);
-        //Console.WriteLine("Sent MsgDCClientDisconnected " + msg.ToString());
-        return msg.ActionId;
-    }
-    
-    public string Send(MsgDCMDSnapshot @event,
-        long? ts = null,
-        string severity = null,
-        string actionId = null,
-        string organizationId = null,
-        string userId = null,
-        string nodeId = null,
-        string userEmail = null
-    )
-    {
-        var msg = new RabbitMsgWrapper()
-        {
-            Ts = ts ?? DateTime.UtcNow.Ticks,
-            Severity = severity ?? "Information",
-            ActionId = actionId ?? Guid.NewGuid().ToString(),
-            Exchange = "exchange.dc.md",
-            MessageType = "MsgDCMDSnapshot",
-            ByteMsg = MessagePackSerializer.Serialize(@event),
-            OrganizationId = organizationId ?? "System",
-            UserId = userId ?? "System",
-            NodeId = nodeId ?? "System",
-            UserEmail = userEmail ?? "System",
-
-            AppName = _eventGatewayConfiguration.ServiceName,
-            AppVersion = _eventGatewayConfiguration.ServiceVersion,
-            SharedVersion = _eventGatewayConfiguration.ServiceSharedVersion,
-            SchemaVersion = MsgSchema.Version.ToString()
-        };
-
-        _publisher.Publish(msg);
-        //Console.WriteLine("Sent MsgDCMDSnapshot " + msg.ToString());
-        return msg.ActionId;
-    }
-    
-    public string Send(MsgDCMDTick @event,
-        long? ts = null,
-        string severity = null,
-        string actionId = null,
-        string organizationId = null,
-        string userId = null,
-        string nodeId = null,
-        string userEmail = null
-    )
-    {
-        var msg = new RabbitMsgWrapper()
-        {
-            Ts = ts ?? DateTime.UtcNow.Ticks,
-            Severity = severity ?? "Information",
-            ActionId = actionId ?? Guid.NewGuid().ToString(),
-            Exchange = "exchange.dc.md",
-            MessageType = "MsgDCMDTick",
-            ByteMsg = MessagePackSerializer.Serialize(@event),
-            OrganizationId = organizationId ?? "System",
-            UserId = userId ?? "System",
-            NodeId = nodeId ?? "System",
-            UserEmail = userEmail ?? "System",
-
-            AppName = _eventGatewayConfiguration.ServiceName,
-            AppVersion = _eventGatewayConfiguration.ServiceVersion,
-            SharedVersion = _eventGatewayConfiguration.ServiceSharedVersion,
-            SchemaVersion = MsgSchema.Version.ToString()
-        };
-
-        _publisher.Publish(msg);
-        //Console.WriteLine("Sent MsgDCMDTick " + msg.ToString());
-        return msg.ActionId;
-    }
-    
-    public string Send(MsgDCRequestRestartFeed @event,
-        long? ts = null,
-        string severity = null,
-        string actionId = null,
-        string organizationId = null,
-        string userId = null,
-        string nodeId = null,
-        string userEmail = null
-    )
-    {
-        var msg = new RabbitMsgWrapper()
-        {
-            Ts = ts ?? DateTime.UtcNow.Ticks,
-            Severity = severity ?? "Information",
-            ActionId = actionId ?? Guid.NewGuid().ToString(),
-            Exchange = "exchange.dc.request",
-            MessageType = "MsgDCRequestRestartFeed",
-            ByteMsg = MessagePackSerializer.Serialize(@event),
-            OrganizationId = organizationId ?? "System",
-            UserId = userId ?? "System",
-            NodeId = nodeId ?? "System",
-            UserEmail = userEmail ?? "System",
-
-            AppName = _eventGatewayConfiguration.ServiceName,
-            AppVersion = _eventGatewayConfiguration.ServiceVersion,
-            SharedVersion = _eventGatewayConfiguration.ServiceSharedVersion,
-            SchemaVersion = MsgSchema.Version.ToString()
-        };
-
-        _publisher.Publish(msg);
-        //Console.WriteLine("Sent MsgDCRequestRestartFeed " + msg.ToString());
-        return msg.ActionId;
-    }
-    
-    public string Send(MsgDCRequestStartFeed @event,
-        long? ts = null,
-        string severity = null,
-        string actionId = null,
-        string organizationId = null,
-        string userId = null,
-        string nodeId = null,
-        string userEmail = null
-    )
-    {
-        var msg = new RabbitMsgWrapper()
-        {
-            Ts = ts ?? DateTime.UtcNow.Ticks,
-            Severity = severity ?? "Information",
-            ActionId = actionId ?? Guid.NewGuid().ToString(),
-            Exchange = "exchange.dc.request",
-            MessageType = "MsgDCRequestStartFeed",
-            ByteMsg = MessagePackSerializer.Serialize(@event),
-            OrganizationId = organizationId ?? "System",
-            UserId = userId ?? "System",
-            NodeId = nodeId ?? "System",
-            UserEmail = userEmail ?? "System",
-
-            AppName = _eventGatewayConfiguration.ServiceName,
-            AppVersion = _eventGatewayConfiguration.ServiceVersion,
-            SharedVersion = _eventGatewayConfiguration.ServiceSharedVersion,
-            SchemaVersion = MsgSchema.Version.ToString()
-        };
-
-        _publisher.Publish(msg);
-        //Console.WriteLine("Sent MsgDCRequestStartFeed " + msg.ToString());
-        return msg.ActionId;
-    }
-    
-    public string Send(MsgDCRequestStopFeed @event,
-        long? ts = null,
-        string severity = null,
-        string actionId = null,
-        string organizationId = null,
-        string userId = null,
-        string nodeId = null,
-        string userEmail = null
-    )
-    {
-        var msg = new RabbitMsgWrapper()
-        {
-            Ts = ts ?? DateTime.UtcNow.Ticks,
-            Severity = severity ?? "Information",
-            ActionId = actionId ?? Guid.NewGuid().ToString(),
-            Exchange = "exchange.dc.request",
-            MessageType = "MsgDCRequestStopFeed",
-            ByteMsg = MessagePackSerializer.Serialize(@event),
-            OrganizationId = organizationId ?? "System",
-            UserId = userId ?? "System",
-            NodeId = nodeId ?? "System",
-            UserEmail = userEmail ?? "System",
-
-            AppName = _eventGatewayConfiguration.ServiceName,
-            AppVersion = _eventGatewayConfiguration.ServiceVersion,
-            SharedVersion = _eventGatewayConfiguration.ServiceSharedVersion,
-            SchemaVersion = MsgSchema.Version.ToString()
-        };
-
-        _publisher.Publish(msg);
-        //Console.WriteLine("Sent MsgDCRequestStopFeed " + msg.ToString());
-        return msg.ActionId;
-    }
-    
-    public string Send(MsgDCRequestSubscribeAllSymbol @event,
-        long? ts = null,
-        string severity = null,
-        string actionId = null,
-        string organizationId = null,
-        string userId = null,
-        string nodeId = null,
-        string userEmail = null
-    )
-    {
-        var msg = new RabbitMsgWrapper()
-        {
-            Ts = ts ?? DateTime.UtcNow.Ticks,
-            Severity = severity ?? "Information",
-            ActionId = actionId ?? Guid.NewGuid().ToString(),
-            Exchange = "exchange.dc.request",
-            MessageType = "MsgDCRequestSubscribeAllSymbol",
-            ByteMsg = MessagePackSerializer.Serialize(@event),
-            OrganizationId = organizationId ?? "System",
-            UserId = userId ?? "System",
-            NodeId = nodeId ?? "System",
-            UserEmail = userEmail ?? "System",
-
-            AppName = _eventGatewayConfiguration.ServiceName,
-            AppVersion = _eventGatewayConfiguration.ServiceVersion,
-            SharedVersion = _eventGatewayConfiguration.ServiceSharedVersion,
-            SchemaVersion = MsgSchema.Version.ToString()
-        };
-
-        _publisher.Publish(msg);
-        //Console.WriteLine("Sent MsgDCRequestSubscribeAllSymbol " + msg.ToString());
-        return msg.ActionId;
-    }
-    
-    public string Send(MsgDCRequestSubscribeSymbol @event,
-        long? ts = null,
-        string severity = null,
-        string actionId = null,
-        string organizationId = null,
-        string userId = null,
-        string nodeId = null,
-        string userEmail = null
-    )
-    {
-        var msg = new RabbitMsgWrapper()
-        {
-            Ts = ts ?? DateTime.UtcNow.Ticks,
-            Severity = severity ?? "Information",
-            ActionId = actionId ?? Guid.NewGuid().ToString(),
-            Exchange = "exchange.dc.request",
-            MessageType = "MsgDCRequestSubscribeSymbol",
-            ByteMsg = MessagePackSerializer.Serialize(@event),
-            OrganizationId = organizationId ?? "System",
-            UserId = userId ?? "System",
-            NodeId = nodeId ?? "System",
-            UserEmail = userEmail ?? "System",
-
-            AppName = _eventGatewayConfiguration.ServiceName,
-            AppVersion = _eventGatewayConfiguration.ServiceVersion,
-            SharedVersion = _eventGatewayConfiguration.ServiceSharedVersion,
-            SchemaVersion = MsgSchema.Version.ToString()
-        };
-
-        _publisher.Publish(msg);
-        //Console.WriteLine("Sent MsgDCRequestSubscribeSymbol " + msg.ToString());
-        return msg.ActionId;
-    }
-    
-    public string Send(MsgDCRequestUnSubscribeAllSymbol @event,
-        long? ts = null,
-        string severity = null,
-        string actionId = null,
-        string organizationId = null,
-        string userId = null,
-        string nodeId = null,
-        string userEmail = null
-    )
-    {
-        var msg = new RabbitMsgWrapper()
-        {
-            Ts = ts ?? DateTime.UtcNow.Ticks,
-            Severity = severity ?? "Information",
-            ActionId = actionId ?? Guid.NewGuid().ToString(),
-            Exchange = "exchange.dc.request",
-            MessageType = "MsgDCRequestUnSubscribeAllSymbol",
-            ByteMsg = MessagePackSerializer.Serialize(@event),
-            OrganizationId = organizationId ?? "System",
-            UserId = userId ?? "System",
-            NodeId = nodeId ?? "System",
-            UserEmail = userEmail ?? "System",
-
-            AppName = _eventGatewayConfiguration.ServiceName,
-            AppVersion = _eventGatewayConfiguration.ServiceVersion,
-            SharedVersion = _eventGatewayConfiguration.ServiceSharedVersion,
-            SchemaVersion = MsgSchema.Version.ToString()
-        };
-
-        _publisher.Publish(msg);
-        //Console.WriteLine("Sent MsgDCRequestUnSubscribeAllSymbol " + msg.ToString());
-        return msg.ActionId;
-    }
-    
-    public string Send(MsgDCRequestUnSubscribeSymbol @event,
-        long? ts = null,
-        string severity = null,
-        string actionId = null,
-        string organizationId = null,
-        string userId = null,
-        string nodeId = null,
-        string userEmail = null
-    )
-    {
-        var msg = new RabbitMsgWrapper()
-        {
-            Ts = ts ?? DateTime.UtcNow.Ticks,
-            Severity = severity ?? "Information",
-            ActionId = actionId ?? Guid.NewGuid().ToString(),
-            Exchange = "exchange.dc.request",
-            MessageType = "MsgDCRequestUnSubscribeSymbol",
-            ByteMsg = MessagePackSerializer.Serialize(@event),
-            OrganizationId = organizationId ?? "System",
-            UserId = userId ?? "System",
-            NodeId = nodeId ?? "System",
-            UserEmail = userEmail ?? "System",
-
-            AppName = _eventGatewayConfiguration.ServiceName,
-            AppVersion = _eventGatewayConfiguration.ServiceVersion,
-            SharedVersion = _eventGatewayConfiguration.ServiceSharedVersion,
-            SchemaVersion = MsgSchema.Version.ToString()
-        };
-
-        _publisher.Publish(msg);
-        //Console.WriteLine("Sent MsgDCRequestUnSubscribeSymbol " + msg.ToString());
-        return msg.ActionId;
-    }
-    
-    public string Send(MsgDCResponseRestartFeed @event,
-        long? ts = null,
-        string severity = null,
-        string actionId = null,
-        string organizationId = null,
-        string userId = null,
-        string nodeId = null,
-        string userEmail = null
-    )
-    {
-        var msg = new RabbitMsgWrapper()
-        {
-            Ts = ts ?? DateTime.UtcNow.Ticks,
-            Severity = severity ?? "Information",
-            ActionId = actionId ?? Guid.NewGuid().ToString(),
-            Exchange = "exchange.dc.response",
-            MessageType = "MsgDCResponseRestartFeed",
-            ByteMsg = MessagePackSerializer.Serialize(@event),
-            OrganizationId = organizationId ?? "System",
-            UserId = userId ?? "System",
-            NodeId = nodeId ?? "System",
-            UserEmail = userEmail ?? "System",
-
-            AppName = _eventGatewayConfiguration.ServiceName,
-            AppVersion = _eventGatewayConfiguration.ServiceVersion,
-            SharedVersion = _eventGatewayConfiguration.ServiceSharedVersion,
-            SchemaVersion = MsgSchema.Version.ToString()
-        };
-
-        _publisher.Publish(msg);
-        //Console.WriteLine("Sent MsgDCResponseRestartFeed " + msg.ToString());
-        return msg.ActionId;
-    }
-    
-    public string Send(MsgDCResponseStartFeed @event,
-        long? ts = null,
-        string severity = null,
-        string actionId = null,
-        string organizationId = null,
-        string userId = null,
-        string nodeId = null,
-        string userEmail = null
-    )
-    {
-        var msg = new RabbitMsgWrapper()
-        {
-            Ts = ts ?? DateTime.UtcNow.Ticks,
-            Severity = severity ?? "Information",
-            ActionId = actionId ?? Guid.NewGuid().ToString(),
-            Exchange = "exchange.dc.response",
-            MessageType = "MsgDCResponseStartFeed",
-            ByteMsg = MessagePackSerializer.Serialize(@event),
-            OrganizationId = organizationId ?? "System",
-            UserId = userId ?? "System",
-            NodeId = nodeId ?? "System",
-            UserEmail = userEmail ?? "System",
-
-            AppName = _eventGatewayConfiguration.ServiceName,
-            AppVersion = _eventGatewayConfiguration.ServiceVersion,
-            SharedVersion = _eventGatewayConfiguration.ServiceSharedVersion,
-            SchemaVersion = MsgSchema.Version.ToString()
-        };
-
-        _publisher.Publish(msg);
-        //Console.WriteLine("Sent MsgDCResponseStartFeed " + msg.ToString());
-        return msg.ActionId;
-    }
-    
-    public string Send(MsgDCResponseStopFeed @event,
-        long? ts = null,
-        string severity = null,
-        string actionId = null,
-        string organizationId = null,
-        string userId = null,
-        string nodeId = null,
-        string userEmail = null
-    )
-    {
-        var msg = new RabbitMsgWrapper()
-        {
-            Ts = ts ?? DateTime.UtcNow.Ticks,
-            Severity = severity ?? "Information",
-            ActionId = actionId ?? Guid.NewGuid().ToString(),
-            Exchange = "exchange.dc.response",
-            MessageType = "MsgDCResponseStopFeed",
-            ByteMsg = MessagePackSerializer.Serialize(@event),
-            OrganizationId = organizationId ?? "System",
-            UserId = userId ?? "System",
-            NodeId = nodeId ?? "System",
-            UserEmail = userEmail ?? "System",
-
-            AppName = _eventGatewayConfiguration.ServiceName,
-            AppVersion = _eventGatewayConfiguration.ServiceVersion,
-            SharedVersion = _eventGatewayConfiguration.ServiceSharedVersion,
-            SchemaVersion = MsgSchema.Version.ToString()
-        };
-
-        _publisher.Publish(msg);
-        //Console.WriteLine("Sent MsgDCResponseStopFeed " + msg.ToString());
-        return msg.ActionId;
-    }
-    
-    public string Send(MsgDCResponseSubscribeAllSymbol @event,
-        long? ts = null,
-        string severity = null,
-        string actionId = null,
-        string organizationId = null,
-        string userId = null,
-        string nodeId = null,
-        string userEmail = null
-    )
-    {
-        var msg = new RabbitMsgWrapper()
-        {
-            Ts = ts ?? DateTime.UtcNow.Ticks,
-            Severity = severity ?? "Information",
-            ActionId = actionId ?? Guid.NewGuid().ToString(),
-            Exchange = "exchange.dc.response",
-            MessageType = "MsgDCResponseSubscribeAllSymbol",
-            ByteMsg = MessagePackSerializer.Serialize(@event),
-            OrganizationId = organizationId ?? "System",
-            UserId = userId ?? "System",
-            NodeId = nodeId ?? "System",
-            UserEmail = userEmail ?? "System",
-
-            AppName = _eventGatewayConfiguration.ServiceName,
-            AppVersion = _eventGatewayConfiguration.ServiceVersion,
-            SharedVersion = _eventGatewayConfiguration.ServiceSharedVersion,
-            SchemaVersion = MsgSchema.Version.ToString()
-        };
-
-        _publisher.Publish(msg);
-        //Console.WriteLine("Sent MsgDCResponseSubscribeAllSymbol " + msg.ToString());
-        return msg.ActionId;
-    }
-    
-    public string Send(MsgDCResponseSubscribeSymbol @event,
-        long? ts = null,
-        string severity = null,
-        string actionId = null,
-        string organizationId = null,
-        string userId = null,
-        string nodeId = null,
-        string userEmail = null
-    )
-    {
-        var msg = new RabbitMsgWrapper()
-        {
-            Ts = ts ?? DateTime.UtcNow.Ticks,
-            Severity = severity ?? "Information",
-            ActionId = actionId ?? Guid.NewGuid().ToString(),
-            Exchange = "exchange.dc.response",
-            MessageType = "MsgDCResponseSubscribeSymbol",
-            ByteMsg = MessagePackSerializer.Serialize(@event),
-            OrganizationId = organizationId ?? "System",
-            UserId = userId ?? "System",
-            NodeId = nodeId ?? "System",
-            UserEmail = userEmail ?? "System",
-
-            AppName = _eventGatewayConfiguration.ServiceName,
-            AppVersion = _eventGatewayConfiguration.ServiceVersion,
-            SharedVersion = _eventGatewayConfiguration.ServiceSharedVersion,
-            SchemaVersion = MsgSchema.Version.ToString()
-        };
-
-        _publisher.Publish(msg);
-        //Console.WriteLine("Sent MsgDCResponseSubscribeSymbol " + msg.ToString());
-        return msg.ActionId;
-    }
-    
-    public string Send(MsgDCResponseUnSubscribeAllSymbol @event,
-        long? ts = null,
-        string severity = null,
-        string actionId = null,
-        string organizationId = null,
-        string userId = null,
-        string nodeId = null,
-        string userEmail = null
-    )
-    {
-        var msg = new RabbitMsgWrapper()
-        {
-            Ts = ts ?? DateTime.UtcNow.Ticks,
-            Severity = severity ?? "Information",
-            ActionId = actionId ?? Guid.NewGuid().ToString(),
-            Exchange = "exchange.dc.response",
-            MessageType = "MsgDCResponseUnSubscribeAllSymbol",
-            ByteMsg = MessagePackSerializer.Serialize(@event),
-            OrganizationId = organizationId ?? "System",
-            UserId = userId ?? "System",
-            NodeId = nodeId ?? "System",
-            UserEmail = userEmail ?? "System",
-
-            AppName = _eventGatewayConfiguration.ServiceName,
-            AppVersion = _eventGatewayConfiguration.ServiceVersion,
-            SharedVersion = _eventGatewayConfiguration.ServiceSharedVersion,
-            SchemaVersion = MsgSchema.Version.ToString()
-        };
-
-        _publisher.Publish(msg);
-        //Console.WriteLine("Sent MsgDCResponseUnSubscribeAllSymbol " + msg.ToString());
-        return msg.ActionId;
-    }
-    
-    public string Send(MsgDCResponseUnSubscribeSymbol @event,
-        long? ts = null,
-        string severity = null,
-        string actionId = null,
-        string organizationId = null,
-        string userId = null,
-        string nodeId = null,
-        string userEmail = null
-    )
-    {
-        var msg = new RabbitMsgWrapper()
-        {
-            Ts = ts ?? DateTime.UtcNow.Ticks,
-            Severity = severity ?? "Information",
-            ActionId = actionId ?? Guid.NewGuid().ToString(),
-            Exchange = "exchange.dc.response",
-            MessageType = "MsgDCResponseUnSubscribeSymbol",
-            ByteMsg = MessagePackSerializer.Serialize(@event),
-            OrganizationId = organizationId ?? "System",
-            UserId = userId ?? "System",
-            NodeId = nodeId ?? "System",
-            UserEmail = userEmail ?? "System",
-
-            AppName = _eventGatewayConfiguration.ServiceName,
-            AppVersion = _eventGatewayConfiguration.ServiceVersion,
-            SharedVersion = _eventGatewayConfiguration.ServiceSharedVersion,
-            SchemaVersion = MsgSchema.Version.ToString()
-        };
-
-        _publisher.Publish(msg);
-        //Console.WriteLine("Sent MsgDCResponseUnSubscribeSymbol " + msg.ToString());
-        return msg.ActionId;
-    }
-    
-    public string Send(MsgSnapshotNodesSlim @event,
-        long? ts = null,
-        string severity = null,
-        string actionId = null,
-        string organizationId = null,
-        string userId = null,
-        string nodeId = null,
-        string userEmail = null
-    )
-    {
-        var msg = new RabbitMsgWrapper()
-        {
-            Ts = ts ?? DateTime.UtcNow.Ticks,
-            Severity = severity ?? "Information",
-            ActionId = actionId ?? Guid.NewGuid().ToString(),
-            Exchange = "exchange.snapshot.notification",
-            MessageType = "MsgSnapshotNodesSlim",
-            ByteMsg = MessagePackSerializer.Serialize(@event),
-            OrganizationId = organizationId ?? "System",
-            UserId = userId ?? "System",
-            NodeId = nodeId ?? "System",
-            UserEmail = userEmail ?? "System",
-
-            AppName = _eventGatewayConfiguration.ServiceName,
-            AppVersion = _eventGatewayConfiguration.ServiceVersion,
-            SharedVersion = _eventGatewayConfiguration.ServiceSharedVersion,
-            SchemaVersion = MsgSchema.Version.ToString()
-        };
-
-        _publisher.Publish(msg);
-        //Console.WriteLine("Sent MsgSnapshotNodesSlim " + msg.ToString());
+        //Console.WriteLine("Sent MsgMDRoutingBulk " + msg.ToString());
         return msg.ActionId;
     }
     
@@ -2588,6 +1505,40 @@ public class EventGateway
         return msg.ActionId;
     }
     
+    public string Send(MsgSnapshotNodesSlim @event,
+        long? ts = null,
+        string severity = null,
+        string actionId = null,
+        string organizationId = null,
+        string userId = null,
+        string nodeId = null,
+        string userEmail = null
+    )
+    {
+        var msg = new RabbitMsgWrapper()
+        {
+            Ts = ts ?? DateTime.UtcNow.Ticks,
+            Severity = severity ?? "Information",
+            ActionId = actionId ?? Guid.NewGuid().ToString(),
+            Exchange = "exchange.snapshot.notification",
+            MessageType = "MsgSnapshotNodesSlim",
+            ByteMsg = MessagePackSerializer.Serialize(@event),
+            OrganizationId = organizationId ?? "System",
+            UserId = userId ?? "System",
+            NodeId = nodeId ?? "System",
+            UserEmail = userEmail ?? "System",
+
+            AppName = _eventGatewayConfiguration.ServiceName,
+            AppVersion = _eventGatewayConfiguration.ServiceVersion,
+            SharedVersion = _eventGatewayConfiguration.ServiceSharedVersion,
+            SchemaVersion = MsgSchema.Version.ToString()
+        };
+
+        _publisher.Publish(msg);
+        //Console.WriteLine("Sent MsgSnapshotNodesSlim " + msg.ToString());
+        return msg.ActionId;
+    }
+    
     public string Send(MsgSnapshotFullSingleAgentNode @event,
         long? ts = null,
         string severity = null,
@@ -2619,40 +1570,6 @@ public class EventGateway
 
         _publisher.Publish(msg);
         //Console.WriteLine("Sent MsgSnapshotFullSingleAgentNode " + msg.ToString());
-        return msg.ActionId;
-    }
-    
-    public string Send(MsgTCLog @event,
-        long? ts = null,
-        string severity = null,
-        string actionId = null,
-        string organizationId = null,
-        string userId = null,
-        string nodeId = null,
-        string userEmail = null
-    )
-    {
-        var msg = new RabbitMsgWrapper()
-        {
-            Ts = ts ?? DateTime.UtcNow.Ticks,
-            Severity = severity ?? "Information",
-            ActionId = actionId ?? Guid.NewGuid().ToString(),
-            Exchange = "exchange.tc.logs",
-            MessageType = "MsgTCLog",
-            ByteMsg = MessagePackSerializer.Serialize(@event),
-            OrganizationId = organizationId ?? "System",
-            UserId = userId ?? "System",
-            NodeId = nodeId ?? "System",
-            UserEmail = userEmail ?? "System",
-
-            AppName = _eventGatewayConfiguration.ServiceName,
-            AppVersion = _eventGatewayConfiguration.ServiceVersion,
-            SharedVersion = _eventGatewayConfiguration.ServiceSharedVersion,
-            SchemaVersion = MsgSchema.Version.ToString()
-        };
-
-        _publisher.Publish(msg);
-        //Console.WriteLine("Sent MsgTCLog " + msg.ToString());
         return msg.ActionId;
     }
     
@@ -2724,7 +1641,74 @@ public class EventGateway
         return msg.ActionId;
     }
     
+    public string Send(MsgSnapshotSingleAgentInformation @event,
+        long? ts = null,
+        string severity = null,
+        string actionId = null,
+        string organizationId = null,
+        string userId = null,
+        string nodeId = null,
+        string userEmail = null
+    )
+    {
+        var msg = new RabbitMsgWrapper()
+        {
+            Ts = ts ?? DateTime.UtcNow.Ticks,
+            Severity = severity ?? "Information",
+            ActionId = actionId ?? Guid.NewGuid().ToString(),
+            Exchange = "exchange.snapshot.notification",
+            MessageType = "MsgSnapshotSingleAgentInformation",
+            ByteMsg = MessagePackSerializer.Serialize(@event),
+            OrganizationId = organizationId ?? "System",
+            UserId = userId ?? "System",
+            NodeId = nodeId ?? "System",
+            UserEmail = userEmail ?? "System",
 
+            AppName = _eventGatewayConfiguration.ServiceName,
+            AppVersion = _eventGatewayConfiguration.ServiceVersion,
+            SharedVersion = _eventGatewayConfiguration.ServiceSharedVersion,
+            SchemaVersion = MsgSchema.Version.ToString()
+        };
+
+        _publisher.Publish(msg);
+        //Console.WriteLine("Sent MsgSnapshotSingleAgentInformation " + msg.ToString());
+        return msg.ActionId;
+    }
+    
+    public string Send(MsgTCLog @event,
+        long? ts = null,
+        string severity = null,
+        string actionId = null,
+        string organizationId = null,
+        string userId = null,
+        string nodeId = null,
+        string userEmail = null
+    )
+    {
+        var msg = new RabbitMsgWrapper()
+        {
+            Ts = ts ?? DateTime.UtcNow.Ticks,
+            Severity = severity ?? "Information",
+            ActionId = actionId ?? Guid.NewGuid().ToString(),
+            Exchange = "exchange.tc.logs",
+            MessageType = "MsgTCLog",
+            ByteMsg = MessagePackSerializer.Serialize(@event),
+            OrganizationId = organizationId ?? "System",
+            UserId = userId ?? "System",
+            NodeId = nodeId ?? "System",
+            UserEmail = userEmail ?? "System",
+
+            AppName = _eventGatewayConfiguration.ServiceName,
+            AppVersion = _eventGatewayConfiguration.ServiceVersion,
+            SharedVersion = _eventGatewayConfiguration.ServiceSharedVersion,
+            SchemaVersion = MsgSchema.Version.ToString()
+        };
+
+        _publisher.Publish(msg);
+        //Console.WriteLine("Sent MsgTCLog " + msg.ToString());
+        return msg.ActionId;
+    }
+    
     public void Receive(BasicDeliverEventArgs args)
     {
         Receive(MsgSchema.FromRabbit(args));
@@ -2777,45 +1761,59 @@ public class EventGateway
             return;
         }
     
-        if (msg.MessageType == "MsgSymbolStatus")
+        if (msg.MessageType == "MsgTradingConnectionSubscriptionStatus")
         {
-            EventMsgSymbolStatus?.Invoke(msg, MessagePackSerializer.Deserialize<MsgSymbolStatus>(msg.ByteMsg));
-            //Console.WriteLine("Received MsgSymbolStatus " + msg.ToString());
+            EventMsgTradingConnectionSubscriptionStatus?.Invoke(msg, MessagePackSerializer.Deserialize<MsgTradingConnectionSubscriptionStatus>(msg.ByteMsg));
+            //Console.WriteLine("Received MsgTradingConnectionSubscriptionStatus " + msg.ToString());
             return;
         }
     
-        if (msg.MessageType == "MsgStartTradingAccount")
+        if (msg.MessageType == "MsgTradingConnectionTradeStatus")
         {
-            EventMsgStartTradingAccount?.Invoke(msg, MessagePackSerializer.Deserialize<MsgStartTradingAccount>(msg.ByteMsg));
-            //Console.WriteLine("Received MsgStartTradingAccount " + msg.ToString());
+            EventMsgTradingConnectionTradeStatus?.Invoke(msg, MessagePackSerializer.Deserialize<MsgTradingConnectionTradeStatus>(msg.ByteMsg));
+            //Console.WriteLine("Received MsgTradingConnectionTradeStatus " + msg.ToString());
             return;
         }
     
-        if (msg.MessageType == "MsgStopTradingAccount")
+        if (msg.MessageType == "MsgStartTradingAccountRequest")
         {
-            EventMsgStopTradingAccount?.Invoke(msg, MessagePackSerializer.Deserialize<MsgStopTradingAccount>(msg.ByteMsg));
-            //Console.WriteLine("Received MsgStopTradingAccount " + msg.ToString());
+            EventMsgStartTradingAccountRequest?.Invoke(msg, MessagePackSerializer.Deserialize<MsgStartTradingAccountRequest>(msg.ByteMsg));
+            //Console.WriteLine("Received MsgStartTradingAccountRequest " + msg.ToString());
             return;
         }
     
-        if (msg.MessageType == "MsgSubscribeSymbol")
+        if (msg.MessageType == "MsgStopTradingAccountRequest")
         {
-            EventMsgSubscribeSymbol?.Invoke(msg, MessagePackSerializer.Deserialize<MsgSubscribeSymbol>(msg.ByteMsg));
-            //Console.WriteLine("Received MsgSubscribeSymbol " + msg.ToString());
+            EventMsgStopTradingAccountRequest?.Invoke(msg, MessagePackSerializer.Deserialize<MsgStopTradingAccountRequest>(msg.ByteMsg));
+            //Console.WriteLine("Received MsgStopTradingAccountRequest " + msg.ToString());
             return;
         }
     
-        if (msg.MessageType == "MsgUnSubscribeSymbol")
+        if (msg.MessageType == "MsgSubscribeSymbolRequest")
         {
-            EventMsgUnSubscribeSymbol?.Invoke(msg, MessagePackSerializer.Deserialize<MsgUnSubscribeSymbol>(msg.ByteMsg));
-            //Console.WriteLine("Received MsgUnSubscribeSymbol " + msg.ToString());
+            EventMsgSubscribeSymbolRequest?.Invoke(msg, MessagePackSerializer.Deserialize<MsgSubscribeSymbolRequest>(msg.ByteMsg));
+            //Console.WriteLine("Received MsgSubscribeSymbolRequest " + msg.ToString());
             return;
         }
     
-        if (msg.MessageType == "MsgOpenTradeManual")
+        if (msg.MessageType == "MsgUnSubscribeSymbolRequest")
         {
-            EventMsgOpenTradeManual?.Invoke(msg, MessagePackSerializer.Deserialize<MsgOpenTradeManual>(msg.ByteMsg));
-            //Console.WriteLine("Received MsgOpenTradeManual " + msg.ToString());
+            EventMsgUnSubscribeSymbolRequest?.Invoke(msg, MessagePackSerializer.Deserialize<MsgUnSubscribeSymbolRequest>(msg.ByteMsg));
+            //Console.WriteLine("Received MsgUnSubscribeSymbolRequest " + msg.ToString());
+            return;
+        }
+    
+        if (msg.MessageType == "MsgOpenTradeManualRequest")
+        {
+            EventMsgOpenTradeManualRequest?.Invoke(msg, MessagePackSerializer.Deserialize<MsgOpenTradeManualRequest>(msg.ByteMsg));
+            //Console.WriteLine("Received MsgOpenTradeManualRequest " + msg.ToString());
+            return;
+        }
+    
+        if (msg.MessageType == "MsgCloseTradeManualRequest")
+        {
+            EventMsgCloseTradeManualRequest?.Invoke(msg, MessagePackSerializer.Deserialize<MsgCloseTradeManualRequest>(msg.ByteMsg));
+            //Console.WriteLine("Received MsgCloseTradeManualRequest " + msg.ToString());
             return;
         }
     
@@ -2854,213 +1852,17 @@ public class EventGateway
             return;
         }
     
-        if (msg.MessageType == "MsgMDTick")
+        if (msg.MessageType == "MsgCloseTradeManualResponse")
         {
-            EventMsgMDTick?.Invoke(msg, MessagePackSerializer.Deserialize<MsgMDTick>(msg.ByteMsg));
-            //Console.WriteLine("Received MsgMDTick " + msg.ToString());
+            EventMsgCloseTradeManualResponse?.Invoke(msg, MessagePackSerializer.Deserialize<MsgCloseTradeManualResponse>(msg.ByteMsg));
+            //Console.WriteLine("Received MsgCloseTradeManualResponse " + msg.ToString());
             return;
         }
     
-        if (msg.MessageType == "MsgMDSnapshot")
+        if (msg.MessageType == "MsgMDRoutingBulk")
         {
-            EventMsgMDSnapshot?.Invoke(msg, MessagePackSerializer.Deserialize<MsgMDSnapshot>(msg.ByteMsg));
-            //Console.WriteLine("Received MsgMDSnapshot " + msg.ToString());
-            return;
-        }
-    
-        if (msg.MessageType == "MsgMDRouting")
-        {
-            EventMsgMDRouting?.Invoke(msg, MessagePackSerializer.Deserialize<MsgMDRouting>(msg.ByteMsg));
-            //Console.WriteLine("Received MsgMDRouting " + msg.ToString());
-            return;
-        }
-    
-        if (msg.MessageType == "MsgTDTradeOpened")
-        {
-            EventMsgTDTradeOpened?.Invoke(msg, MessagePackSerializer.Deserialize<MsgTDTradeOpened>(msg.ByteMsg));
-            //Console.WriteLine("Received MsgTDTradeOpened " + msg.ToString());
-            return;
-        }
-    
-        if (msg.MessageType == "MsgTDTradeClosed")
-        {
-            EventMsgTDTradeClosed?.Invoke(msg, MessagePackSerializer.Deserialize<MsgTDTradeClosed>(msg.ByteMsg));
-            //Console.WriteLine("Received MsgTDTradeClosed " + msg.ToString());
-            return;
-        }
-    
-        if (msg.MessageType == "MsgTDSnapshot")
-        {
-            EventMsgTDSnapshot?.Invoke(msg, MessagePackSerializer.Deserialize<MsgTDSnapshot>(msg.ByteMsg));
-            //Console.WriteLine("Received MsgTDSnapshot " + msg.ToString());
-            return;
-        }
-    
-        if (msg.MessageType == "MsgSyncTradingAccount")
-        {
-            EventMsgSyncTradingAccount?.Invoke(msg, MessagePackSerializer.Deserialize<MsgSyncTradingAccount>(msg.ByteMsg));
-            //Console.WriteLine("Received MsgSyncTradingAccount " + msg.ToString());
-            return;
-        }
-    
-        if (msg.MessageType == "MsgStartingDC")
-        {
-            EventMsgStartingDC?.Invoke(msg, MessagePackSerializer.Deserialize<MsgStartingDC>(msg.ByteMsg));
-            //Console.WriteLine("Received MsgStartingDC " + msg.ToString());
-            return;
-        }
-    
-        if (msg.MessageType == "MsgStartedDC")
-        {
-            EventMsgStartedDC?.Invoke(msg, MessagePackSerializer.Deserialize<MsgStartedDC>(msg.ByteMsg));
-            //Console.WriteLine("Received MsgStartedDC " + msg.ToString());
-            return;
-        }
-    
-        if (msg.MessageType == "MsgRestartingDC")
-        {
-            EventMsgRestartingDC?.Invoke(msg, MessagePackSerializer.Deserialize<MsgRestartingDC>(msg.ByteMsg));
-            //Console.WriteLine("Received MsgRestartingDC " + msg.ToString());
-            return;
-        }
-    
-        if (msg.MessageType == "MsgFailedToStartDC")
-        {
-            EventMsgFailedToStartDC?.Invoke(msg, MessagePackSerializer.Deserialize<MsgFailedToStartDC>(msg.ByteMsg));
-            //Console.WriteLine("Received MsgFailedToStartDC " + msg.ToString());
-            return;
-        }
-    
-        if (msg.MessageType == "MsgDCClientConnected")
-        {
-            EventMsgDCClientConnected?.Invoke(msg, MessagePackSerializer.Deserialize<MsgDCClientConnected>(msg.ByteMsg));
-            //Console.WriteLine("Received MsgDCClientConnected " + msg.ToString());
-            return;
-        }
-    
-        if (msg.MessageType == "MsgDCClientDisconnected")
-        {
-            EventMsgDCClientDisconnected?.Invoke(msg, MessagePackSerializer.Deserialize<MsgDCClientDisconnected>(msg.ByteMsg));
-            //Console.WriteLine("Received MsgDCClientDisconnected " + msg.ToString());
-            return;
-        }
-    
-        if (msg.MessageType == "MsgDCMDSnapshot")
-        {
-            EventMsgDCMDSnapshot?.Invoke(msg, MessagePackSerializer.Deserialize<MsgDCMDSnapshot>(msg.ByteMsg));
-            //Console.WriteLine("Received MsgDCMDSnapshot " + msg.ToString());
-            return;
-        }
-    
-        if (msg.MessageType == "MsgDCMDTick")
-        {
-            EventMsgDCMDTick?.Invoke(msg, MessagePackSerializer.Deserialize<MsgDCMDTick>(msg.ByteMsg));
-            //Console.WriteLine("Received MsgDCMDTick " + msg.ToString());
-            return;
-        }
-    
-        if (msg.MessageType == "MsgDCRequestRestartFeed")
-        {
-            EventMsgDCRequestRestartFeed?.Invoke(msg, MessagePackSerializer.Deserialize<MsgDCRequestRestartFeed>(msg.ByteMsg));
-            //Console.WriteLine("Received MsgDCRequestRestartFeed " + msg.ToString());
-            return;
-        }
-    
-        if (msg.MessageType == "MsgDCRequestStartFeed")
-        {
-            EventMsgDCRequestStartFeed?.Invoke(msg, MessagePackSerializer.Deserialize<MsgDCRequestStartFeed>(msg.ByteMsg));
-            //Console.WriteLine("Received MsgDCRequestStartFeed " + msg.ToString());
-            return;
-        }
-    
-        if (msg.MessageType == "MsgDCRequestStopFeed")
-        {
-            EventMsgDCRequestStopFeed?.Invoke(msg, MessagePackSerializer.Deserialize<MsgDCRequestStopFeed>(msg.ByteMsg));
-            //Console.WriteLine("Received MsgDCRequestStopFeed " + msg.ToString());
-            return;
-        }
-    
-        if (msg.MessageType == "MsgDCRequestSubscribeAllSymbol")
-        {
-            EventMsgDCRequestSubscribeAllSymbol?.Invoke(msg, MessagePackSerializer.Deserialize<MsgDCRequestSubscribeAllSymbol>(msg.ByteMsg));
-            //Console.WriteLine("Received MsgDCRequestSubscribeAllSymbol " + msg.ToString());
-            return;
-        }
-    
-        if (msg.MessageType == "MsgDCRequestSubscribeSymbol")
-        {
-            EventMsgDCRequestSubscribeSymbol?.Invoke(msg, MessagePackSerializer.Deserialize<MsgDCRequestSubscribeSymbol>(msg.ByteMsg));
-            //Console.WriteLine("Received MsgDCRequestSubscribeSymbol " + msg.ToString());
-            return;
-        }
-    
-        if (msg.MessageType == "MsgDCRequestUnSubscribeAllSymbol")
-        {
-            EventMsgDCRequestUnSubscribeAllSymbol?.Invoke(msg, MessagePackSerializer.Deserialize<MsgDCRequestUnSubscribeAllSymbol>(msg.ByteMsg));
-            //Console.WriteLine("Received MsgDCRequestUnSubscribeAllSymbol " + msg.ToString());
-            return;
-        }
-    
-        if (msg.MessageType == "MsgDCRequestUnSubscribeSymbol")
-        {
-            EventMsgDCRequestUnSubscribeSymbol?.Invoke(msg, MessagePackSerializer.Deserialize<MsgDCRequestUnSubscribeSymbol>(msg.ByteMsg));
-            //Console.WriteLine("Received MsgDCRequestUnSubscribeSymbol " + msg.ToString());
-            return;
-        }
-    
-        if (msg.MessageType == "MsgDCResponseRestartFeed")
-        {
-            EventMsgDCResponseRestartFeed?.Invoke(msg, MessagePackSerializer.Deserialize<MsgDCResponseRestartFeed>(msg.ByteMsg));
-            //Console.WriteLine("Received MsgDCResponseRestartFeed " + msg.ToString());
-            return;
-        }
-    
-        if (msg.MessageType == "MsgDCResponseStartFeed")
-        {
-            EventMsgDCResponseStartFeed?.Invoke(msg, MessagePackSerializer.Deserialize<MsgDCResponseStartFeed>(msg.ByteMsg));
-            //Console.WriteLine("Received MsgDCResponseStartFeed " + msg.ToString());
-            return;
-        }
-    
-        if (msg.MessageType == "MsgDCResponseStopFeed")
-        {
-            EventMsgDCResponseStopFeed?.Invoke(msg, MessagePackSerializer.Deserialize<MsgDCResponseStopFeed>(msg.ByteMsg));
-            //Console.WriteLine("Received MsgDCResponseStopFeed " + msg.ToString());
-            return;
-        }
-    
-        if (msg.MessageType == "MsgDCResponseSubscribeAllSymbol")
-        {
-            EventMsgDCResponseSubscribeAllSymbol?.Invoke(msg, MessagePackSerializer.Deserialize<MsgDCResponseSubscribeAllSymbol>(msg.ByteMsg));
-            //Console.WriteLine("Received MsgDCResponseSubscribeAllSymbol " + msg.ToString());
-            return;
-        }
-    
-        if (msg.MessageType == "MsgDCResponseSubscribeSymbol")
-        {
-            EventMsgDCResponseSubscribeSymbol?.Invoke(msg, MessagePackSerializer.Deserialize<MsgDCResponseSubscribeSymbol>(msg.ByteMsg));
-            //Console.WriteLine("Received MsgDCResponseSubscribeSymbol " + msg.ToString());
-            return;
-        }
-    
-        if (msg.MessageType == "MsgDCResponseUnSubscribeAllSymbol")
-        {
-            EventMsgDCResponseUnSubscribeAllSymbol?.Invoke(msg, MessagePackSerializer.Deserialize<MsgDCResponseUnSubscribeAllSymbol>(msg.ByteMsg));
-            //Console.WriteLine("Received MsgDCResponseUnSubscribeAllSymbol " + msg.ToString());
-            return;
-        }
-    
-        if (msg.MessageType == "MsgDCResponseUnSubscribeSymbol")
-        {
-            EventMsgDCResponseUnSubscribeSymbol?.Invoke(msg, MessagePackSerializer.Deserialize<MsgDCResponseUnSubscribeSymbol>(msg.ByteMsg));
-            //Console.WriteLine("Received MsgDCResponseUnSubscribeSymbol " + msg.ToString());
-            return;
-        }
-    
-        if (msg.MessageType == "MsgSnapshotNodesSlim")
-        {
-            EventMsgSnapshotNodesSlim?.Invoke(msg, MessagePackSerializer.Deserialize<MsgSnapshotNodesSlim>(msg.ByteMsg));
-            //Console.WriteLine("Received MsgSnapshotNodesSlim " + msg.ToString());
+            EventMsgMDRoutingBulk?.Invoke(msg, MessagePackSerializer.Deserialize<MsgMDRoutingBulk>(msg.ByteMsg));
+            //Console.WriteLine("Received MsgMDRoutingBulk " + msg.ToString());
             return;
         }
     
@@ -3085,17 +1887,17 @@ public class EventGateway
             return;
         }
     
+        if (msg.MessageType == "MsgSnapshotNodesSlim")
+        {
+            EventMsgSnapshotNodesSlim?.Invoke(msg, MessagePackSerializer.Deserialize<MsgSnapshotNodesSlim>(msg.ByteMsg));
+            //Console.WriteLine("Received MsgSnapshotNodesSlim " + msg.ToString());
+            return;
+        }
+    
         if (msg.MessageType == "MsgSnapshotFullSingleAgentNode")
         {
             EventMsgSnapshotFullSingleAgentNode?.Invoke(msg, MessagePackSerializer.Deserialize<MsgSnapshotFullSingleAgentNode>(msg.ByteMsg));
             //Console.WriteLine("Received MsgSnapshotFullSingleAgentNode " + msg.ToString());
-            return;
-        }
-    
-        if (msg.MessageType == "MsgTCLog")
-        {
-            EventMsgTCLog?.Invoke(msg, MessagePackSerializer.Deserialize<MsgTCLog>(msg.ByteMsg));
-            //Console.WriteLine("Received MsgTCLog " + msg.ToString());
             return;
         }
     
@@ -3113,7 +1915,20 @@ public class EventGateway
             return;
         }
     
-    }
+        if (msg.MessageType == "MsgSnapshotSingleAgentInformation")
+        {
+            EventMsgSnapshotSingleAgentInformation?.Invoke(msg, MessagePackSerializer.Deserialize<MsgSnapshotSingleAgentInformation>(msg.ByteMsg));
+            //Console.WriteLine("Received MsgSnapshotSingleAgentInformation " + msg.ToString());
+            return;
+        }
+    
+        if (msg.MessageType == "MsgTCLog")
+        {
+            EventMsgTCLog?.Invoke(msg, MessagePackSerializer.Deserialize<MsgTCLog>(msg.ByteMsg));
+            //Console.WriteLine("Received MsgTCLog " + msg.ToString());
+            return;
+        }
+        }
 
 }
 

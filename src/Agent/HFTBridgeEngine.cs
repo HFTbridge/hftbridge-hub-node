@@ -16,6 +16,8 @@ namespace HFTbridge.Node.Agent
 
         private readonly Disruptor<FastMarketDataEvent> _fastFeedAnalysisPipe;
 
+        public event Action<MsgMDRoutingBulk> OnMsgMDRoutingBulk;
+
 
         public HFTBridgeEngine()
         {
@@ -30,7 +32,7 @@ namespace HFTbridge.Node.Agent
                 )
                 .Then(new TransformMarketDataHandler()) // Thread 2:  CALCULATE GAPS
                 .Then(new StrategyMarketDataHandler()) // Thread 3: RUN STRATEGIES
-                .Then(new PublishMarketDataHandler()) // Thread 4: PUBLISH TO INFRASTRUCTUR
+                .Then(new PublishMarketDataHandler(this)) // Thread 4: PUBLISH TO INFRASTRUCTUR
                 .Then(new OffsetMarketDataHandler()); // Thread 5: UPDATE OFFSET LOOKUP STORE
 
             _fastFeedAnalysisPipe.Start();
@@ -41,8 +43,13 @@ namespace HFTbridge.Node.Agent
             _fastFeed.Start();
         }
 
-        public void Connect(MsgStartTradingAccount msg, string organizationId, string userId)
+        public void Connect(MsgStartTradingAccountRequest msg, string organizationId, string userId)
         {
+            if (_tradingConnections.ContainsKey(msg.TradingAccountId))
+            {
+                throw new InvalidOperationException($"A connection with TradingAccountId {msg.TradingAccountId} already exists.");
+            }
+
             var record = new SubMsgSnapshotFullSingleAgentNodeTC()
             {
                 OrganizationId = organizationId,
@@ -57,15 +64,18 @@ namespace HFTbridge.Node.Agent
                 OpenedTradesCount = 0,
                 ErrorCount = 0,
                 ConnectedAtTs = DateTime.UtcNow.Ticks
-
             };
-            _tradingConnections[msg.TradingAccountId]=record;
 
-            //var adapter = _tc.CreateTCAdapter(providerMatchingId, credentialsJson, brokerId);
+            var adapter = _tc.CreateTCAdapter(msg.TradingAccountProvider, msg.TradingAccountConnectionString, msg.BrokerId);
+            adapter.Connect();
+            Console.WriteLine(adapter.Config.Version);
+            _tradingConnections[msg.TradingAccountId] = record;
+
             
         }
 
-        public void Disconnect( MsgStopTradingAccount msg, string organizationId, string userId)
+
+        public void Disconnect( MsgStopTradingAccountRequest msg, string organizationId, string userId)
         {
             _tradingConnections.Remove(msg.TradingAccountId);
         }
@@ -75,5 +85,10 @@ namespace HFTbridge.Node.Agent
             return _tradingConnections.Values.ToList();
         }
 
+        public void InvokeOnMsgMDRoutingBulk(MsgMDRoutingBulk msg)
+        {
+            OnMsgMDRoutingBulk?.Invoke(msg);
+        }
+        
     }
 }

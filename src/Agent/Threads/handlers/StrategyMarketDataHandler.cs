@@ -15,7 +15,7 @@ namespace HFTbridge.Agent
         {
             try
             {
-                
+                data.CalculateProcessingTimeMs();
             }
             catch (System.Exception e)
             {
