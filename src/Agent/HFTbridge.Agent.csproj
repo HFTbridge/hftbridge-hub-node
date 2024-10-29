@@ -8,7 +8,7 @@
     <LangVersion>preview</LangVersion>
     <PublishSingleFile>true</PublishSingleFile>
     <SelfContained>true</SelfContained>
-    <Version>1.0.0.5</Version>
+    <Version>1.0.0.6</Version>
   </PropertyGroup>
 
 
@@ -42,10 +42,10 @@
     
   </ItemGroup>
 
-    <ItemGroup>
-      <ProjectReference Include="..\..\..\hftbridge-service-tc\trading-connections\HFTbridge.TCLIB\HFTbridge.TCLIB.csproj" />
-    </ItemGroup>
-
+  <ItemGroup>
+    <PackageReference Include="HFTbridge.TCLIB" Version="1.1.9"/>
+    <PackageReference Include="HFTbridge.TC.Shared" Version="1.0.3"/>
+  </ItemGroup>
 
       <ItemGroup>
     <PackageReference Include="Disruptor" Version="5.0.0" />
