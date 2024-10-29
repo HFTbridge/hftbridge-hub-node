@@ -2,17 +2,22 @@ using HFTbridge.Msg;
 using HFTbridge.TCLIB;
 using HFTbridge.Agent.Services;
 using HFTbridge.Agent;
+using Agent.Models;
 using Disruptor;
 using Disruptor.Dsl;
 
+using HFTbridge.TC.Shared;
 
 namespace HFTbridge.Node.Agent
 {
     public class HFTBridgeEngine
     {
         private readonly Dictionary<string,SubMsgSnapshotFullSingleAgentNodeTC> _tradingConnections;
+        public readonly Dictionary<string,ITCAdapter> TradingConnections;
         private readonly TCFactory _tc;
         private readonly FastFeedManager _fastFeed;
+
+        public readonly StoreMarketData MDStore;
 
         private readonly Disruptor<FastMarketDataEvent> _fastFeedAnalysisPipe;
 
@@ -21,6 +26,10 @@ namespace HFTbridge.Node.Agent
 
         public HFTBridgeEngine()
         {
+            MDStore = new StoreMarketData();
+
+            TradingConnections = new Dictionary<string, ITCAdapter>();
+
             _tradingConnections = new Dictionary<string, SubMsgSnapshotFullSingleAgentNodeTC>();
             _tc = new TCFactory();
 
@@ -28,8 +37,9 @@ namespace HFTbridge.Node.Agent
                 new FastMarketDataEvent(), ringBufferSize: 262144);
 
             _fastFeedAnalysisPipe.HandleEventsWith(
-                    new AggregateMarketDataHandler() // Thread 1:  GET SYMBOLS from ALL Connected Accounts
+                    new AggregateMarketDataHandler(this) // Thread 1:  GET SYMBOLS from ALL Connected Accounts
                 )
+                .Then(new UpdateMarketDataStoreHandler(MDStore))
                 .Then(new TransformMarketDataHandler()) // Thread 2:  CALCULATE GAPS
                 .Then(new StrategyMarketDataHandler()) // Thread 3: RUN STRATEGIES
                 .Then(new PublishMarketDataHandler(this)) // Thread 4: PUBLISH TO INFRASTRUCTUR
@@ -37,7 +47,7 @@ namespace HFTbridge.Node.Agent
 
             _fastFeedAnalysisPipe.Start();
 
-            _fastFeed = new FastFeedManager(_fastFeedAnalysisPipe);
+            _fastFeed = new FastFeedManager(_fastFeedAnalysisPipe, MDStore);
 
             
             _fastFeed.Start();
@@ -66,10 +76,44 @@ namespace HFTbridge.Node.Agent
                 ConnectedAtTs = DateTime.UtcNow.Ticks
             };
 
-            var adapter = _tc.CreateTCAdapter(msg.TradingAccountProvider, msg.TradingAccountConnectionString, msg.BrokerId);
+            var adapter = _tc.CreateTCAdapter(
+                msg.TradingAccountProvider, 
+                msg.TradingAccountConnectionString, 
+                msg.BrokerId, 
+                msg.TradingAccountId,
+                organizationId, 
+                userId);
+
+         //   Console.WriteLine("TEST === " +  msg.TradingAccountId + "|" + organizationId);
+            //var adapter = _tc.CreateTCAdapter(msg.TradingAccountProvider, msg.TradingAccountConnectionString, msg.BrokerId);
+
+
+
+            // ADD LOGGING
+            adapter.TCLogger.OnLogEntry += logEntry =>{
+                Console.WriteLine(logEntry.Message);
+                return;
+            };
+
+            // adapter.OnNewTCTick += logTick =>{
+            //     Console.WriteLine(logTick.Symbolkey + "|" + logTick.SymbolRouting + "|" + logTick.AvgPrice);
+            //     return;
+            // };
+
+            // CONNECT
             adapter.Connect();
-            Console.WriteLine(adapter.Config.Version);
+
+            foreach (var item in msg.Subscribe)
+            {
+                adapter.Subscribe(item.SymbolKey, item.SymbolRouting, item.Digits);
+            }
+
+            // adapter.Subscribe("EURUSD", "EURUSD", 5);
+            // adapter.Subscribe("GBPUSD", "GBPUSD", 5);
+            
+            
             _tradingConnections[msg.TradingAccountId] = record;
+            TradingConnections[msg.TradingAccountId] = adapter;
 
             
         }

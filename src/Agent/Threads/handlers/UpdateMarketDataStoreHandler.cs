@@ -1,21 +1,22 @@
 using Disruptor;
 using Disruptor.Dsl;
+using Agent.Models;
 
 namespace HFTbridge.Agent
 {
-    public class OffsetMarketDataHandler : IEventHandler<FastMarketDataEvent>
+    public class UpdateMarketDataStoreHandler : IEventHandler<FastMarketDataEvent>
     {
-
-        public OffsetMarketDataHandler()
+        private readonly StoreMarketData _mdStore;
+        public UpdateMarketDataStoreHandler(StoreMarketData mdStore)
         {
-
+            _mdStore = mdStore;
         }
 
         public async void OnEvent(FastMarketDataEvent data, long sequence, bool endOfBatch)
         {
             try
             {
-                data.TradinConnectionsQuotes.Clear();
+                _mdStore.Update("INTERNAL.SPOT",data.SymbolKey,data.Ask,data.Bid);
             }
             catch (System.Exception e)
             {

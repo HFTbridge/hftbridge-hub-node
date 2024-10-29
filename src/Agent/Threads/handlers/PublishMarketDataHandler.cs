@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
+
 namespace HFTbridge.Agent
 {
     public class PublishMarketDataHandler : IEventHandler<FastMarketDataEvent>
@@ -76,5 +77,7 @@ namespace HFTbridge.Agent
         {
             _timer.Dispose();
         }
+
+       
     }
 }

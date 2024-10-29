@@ -3,6 +3,7 @@ using ProtoClient;
 using com.chronoxor.simple;
 using Disruptor;
 using Disruptor.Dsl;
+using Agent.Models;
 
 namespace HFTbridge.Agent.Services
 {
@@ -13,12 +14,16 @@ namespace HFTbridge.Agent.Services
         private readonly Disruptor<FastMarketDataEvent> _fastFeedAnalysisPipe;
         private readonly string _tradingAccount;
 
-        public FastFeedManager(Disruptor<FastMarketDataEvent> fastFeedAnalysisPipe)
+        private readonly StoreMarketData _mdStore;
+
+        public FastFeedManager(Disruptor<FastMarketDataEvent> fastFeedAnalysisPipe, StoreMarketData mdStore)
         {
+            _mdStore = mdStore;
             _fastFeedAnalysisPipe = fastFeedAnalysisPipe;
             _symbolInfoCache = new ConcurrentDictionary<string, SymbolInfo>();
             AddSymbols();
-            _feed = new SimpleProtoClient("207.167.96.187", 9009);
+           _feed = new SimpleProtoClient("207.167.96.187", 9009);
+        //   _feed = new SimpleProtoClient("207.167.96.187", 9010);
             _feed.ReceivedNotify_NewMdNotify += HandleNewTick;
             _tradingAccount = "INTERNAL.SPOT";
         }
@@ -30,6 +35,9 @@ namespace HFTbridge.Agent.Services
 
         private void AddSymbols()
         {
+            // AddSymbol("XAUUSD", 2);
+            // AddSymbol("EURUSD", 5);
+
             AddSymbol("XBR/USD", 2);
             AddSymbol("XTI/USD", 2);
             AddSymbol("XAG/USD", 2);
@@ -67,30 +75,52 @@ namespace HFTbridge.Agent.Services
         {
             var symbolRouting = symbolKey.Replace("/", "");
             _symbolInfoCache[symbolKey] = new SymbolInfo(symbolRouting, digits);
+            _mdStore.Add("PUBLIC", "INTERNAL.SPOT", symbolKey, symbolRouting, digits);
         }
 
         private void HandleNewTick(NewMdNotify notify)
         {
             if (_symbolInfoCache.TryGetValue(notify.symbolkey, out var symbolInfo))
             {
+                // Update symbol information
+                symbolInfo.Update(notify.ask, notify.bid);
+
+                // Publish the event for further analysis
                 using (var scope = _fastFeedAnalysisPipe.PublishEvent())
                 {
                     var data = scope.Event();
                     data.Publish(notify.symbolkey, symbolInfo.SymbolRouting, notify.ask, notify.bid, symbolInfo.Digits);
                 }
+
+                // Log or trigger further actions based on updated symbol information
+                // You can access symbolInfo.Spread, symbolInfo.Average, symbolInfo.LastUpdated here if needed
             }
         }
+
 
         private class SymbolInfo
         {
             public string SymbolRouting { get; }
             public int Digits { get; }
+            public double Ask { get; private set; }
+            public double Bid { get; private set; }
+            public double Spread => Math.Round(Ask - Bid, Digits);
+            public double Average => Math.Round((Ask + Bid) / 2, Digits);
+            public DateTime LastUpdated { get; private set; }
 
             public SymbolInfo(string symbolRouting, int digits)
             {
                 SymbolRouting = symbolRouting;
                 Digits = digits;
             }
+
+            public void Update(double ask, double bid)
+            {
+                Ask = ask;
+                Bid = bid;
+                LastUpdated = DateTime.UtcNow;
+            }
         }
+
     }
 }

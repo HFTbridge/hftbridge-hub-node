@@ -9,7 +9,10 @@ namespace HFTbridge.Node.Agent
         static async Task Main(string[] args)
         {
             var organizationId = "PUBLIC";
-            var nodeId = "MIKE-DEV-2";
+            //var nodeId = "MIKE-DEV";
+            var nodeId = "Mike-Dev";
+
+            
 
             var engine = new HFTBridgeEngine();
             
