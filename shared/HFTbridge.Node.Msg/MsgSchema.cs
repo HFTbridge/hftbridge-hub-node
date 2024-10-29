@@ -9,7 +9,7 @@ namespace HFTbridge.Msg;
 
 public static class MsgSchema
 {
-    public static int Version = 24;
+    public static int Version = 26;
 
 //--------------------------------------------------------------------------------------------------------------------------------------------
 //------[ DECODE MESSAGE FROM RABBIT MQ LIBRARAY  ]
@@ -158,6 +158,22 @@ public record struct RabbitMsgWrapper(
     [property: Key(12)] string SharedVersion,
     [property: Key(13)] string SchemaVersion
 );
+
+//--------------------------------------------------------------------------------------------------------------------------------------------
+//------[ DICTIONARY TO LOOKUP EXCHANGE NAME FOR EACH MESSAGE  ]
+//--------------------------------------------------------------------------------------------------------------------------------------------
+
+// SHOULD BE LIKE THIS : TODO! Please write in JS the function to generate this dictionary
+// public static readonly Dictionary<string, string> ExchangeMessageLookup = new Dictionary<string, string>
+// {
+//     { "exchange.agent.md", "MsgMDRoutingBulk" },
+//     { "exchange.snapshot.notification", "MsgSnapshotSingleAgentStatus" },
+//     { "exchange.snapshot.notification", "MsgSnapshotSingleAgentTradingConnections" },
+//     { "exchange.snapshot.notification", "MsgSnapshotSingleAgentMarketData" },
+//     { "exchange.snapshot.notification", "MsgSnapshotSingleAgentLiveTrades" },
+//     { "exchange.snapshot.notification", "MsgSnapshotSingleAgentMetrics" }
+// };
+
 
 
 //--------------------------------------------------------------------------------------------------------------------------------------------
@@ -537,28 +553,70 @@ public record struct SubMsgSnapshotFullSingleAgentNodeTC(
 );
     
 [MessagePackObject]
-public record struct MsgSnapshotSingleAgentLiveTrades(
+public record struct MsgSnapshotSingleAgentInformation(
     [property: Key(0)] long Ts,
-    [property: Key(1)] double TotalPnL,
-    [property: Key(2)] int TradesCount,
-    [property: Key(3)] string NodeId,
-    [property: Key(4)] List<SubMsgSnapshotSingleAgentLiveTradesItem> Trades
+    [property: Key(1)] string OrganizationId,
+    [property: Key(2)] string NodeId,
+    [property: Key(3)] string OperatingSystem,
+    [property: Key(4)] string CountryCode,
+    [property: Key(5)] int TpsTotal,
+    [property: Key(6)] int TickToTradeMax,
+    [property: Key(7)] int TickToTradeMin,
+    [property: Key(8)] int TickToTradeAverage,
+    [property: Key(9)] int ConnectedTradingAccountsCount,
+    [property: Key(10)] int StreamingMarketDataSymbolsCount
+);
+
+
+    
+[MessagePackObject]
+public record struct MsgSnapshotSingleAgentStatus(
+    [property: Key(0)] long Ts,
+    [property: Key(1)] string OrganizationId,
+    [property: Key(2)] string NodeId,
+    [property: Key(3)] string OperatingSystem,
+    [property: Key(4)] string HardwareCPU,
+    [property: Key(5)] string HardwareNC,
+    [property: Key(6)] string HardwareGPU,
+    [property: Key(7)] string Country,
+    [property: Key(8)] string CountryCode,
+    [property: Key(9)] string City,
+    [property: Key(10)] string Region,
+    [property: Key(11)] string RegionName,
+    [property: Key(12)] string Zip,
+    [property: Key(13)] double Lat,
+    [property: Key(14)] double Lon,
+    [property: Key(15)] string Timezone,
+    [property: Key(16)] string Isp,
+    [property: Key(17)] string OrgServer,
+    [property: Key(18)] string QueryDNS,
+    [property: Key(19)] string OriginIp
+);
+  
+[MessagePackObject]
+public record struct MsgSnapshotSingleAgentTradingConnections(
+    [property: Key(0)] long Ts,
+    [property: Key(1)] string OrganizationId,
+    [property: Key(2)] string NodeId,
+    [property: Key(3)] string OperatingSystem,
+    [property: Key(4)] string CountryCode,
+    [property: Key(5)] List<SubMsgSnapshotSingleAgentTradingConnectionsItem> ConnectedAccounts
 );
 
 [MessagePackObject]
-public record struct SubMsgSnapshotSingleAgentLiveTradesItem(
-    [property: Key(0)] long TradeOpenedTs,    
-    [property: Key(1)] string OrganizationId,
-    [property: Key(2)] string TradingAccountId,
-    [property: Key(3)] string TradeId,
-    [property: Key(4)] string TradeTicket,
-    [property: Key(5)] string Direction,
-    [property: Key(6)] string SymbolKey,
-    [property: Key(7)] int Digits,
-    [property: Key(8)] double OpenPrice,
-    [property: Key(9)] double PnL,
-    [property: Key(10)] double TP,
-    [property: Key(11)] double SL
+public record struct SubMsgSnapshotSingleAgentTradingConnectionsItem(
+    [property: Key(0)] string OrganizationId,
+    [property: Key(1)] string TradingAccountId,
+    [property: Key(2)] string ConnectionStatus,
+    [property: Key(3)] double Balance,
+    [property: Key(4)] double Equity,
+    [property: Key(5)] double PingMs,
+    [property: Key(6)] int StreamingSymbols,
+    [property: Key(7)] int TpsAccount,
+    [property: Key(8)] int TpmAccount,
+    [property: Key(9)] int OpenedTradesCount,
+    [property: Key(10)] int ErrorCount,
+    [property: Key(11)] long ConnectedAtTs
 );
     
 [MessagePackObject]
@@ -590,22 +648,50 @@ public record struct SubMsgSnapshotSingleAgentMarketDataQuote(
 );
     
 [MessagePackObject]
-public record struct MsgSnapshotSingleAgentInformation(
+public record struct MsgSnapshotSingleAgentLiveTrades(
+    [property: Key(0)] long Ts,
+    [property: Key(1)] double TotalPnL,
+    [property: Key(2)] int TradesCount,
+    [property: Key(3)] string NodeId,
+    [property: Key(4)] List<SubMsgSnapshotSingleAgentLiveTradesItem> Trades
+);
+
+[MessagePackObject]
+public record struct SubMsgSnapshotSingleAgentLiveTradesItem(
+    [property: Key(0)] long TradeOpenedTs,    
+    [property: Key(1)] string OrganizationId,
+    [property: Key(2)] string TradingAccountId,
+    [property: Key(3)] string TradeId,
+    [property: Key(4)] string TradeTicket,
+    [property: Key(5)] string Direction,
+    [property: Key(6)] string SymbolKey,
+    [property: Key(7)] int Digits,
+    [property: Key(8)] double OpenPrice,
+    [property: Key(9)] double PnL,
+    [property: Key(10)] double TP,
+    [property: Key(11)] double SL
+);
+    
+[MessagePackObject]
+public record struct MsgSnapshotSingleAgentMetrics(
     [property: Key(0)] long Ts,
     [property: Key(1)] string OrganizationId,
     [property: Key(2)] string NodeId,
     [property: Key(3)] string OperatingSystem,
-    [property: Key(4)] string CountryCode,
-    [property: Key(5)] int TpsTotal,
-    [property: Key(6)] int TickToTradeMax,
-    [property: Key(7)] int TickToTradeMin,
-    [property: Key(8)] int TickToTradeAverage,
-    [property: Key(9)] int ConnectedTradingAccountsCount,
-    [property: Key(10)] int StreamingMarketDataSymbolsCount
+    [property: Key(4)] string HardwareCPU,
+    [property: Key(5)] string HardwareNC,
+    [property: Key(6)] string HardwareGPU,
+    [property: Key(7)] long ProcessedRequests,
+    [property: Key(8)] long ProcessedTicks,
+    [property: Key(9)] long ProcessedSignals,
+    [property: Key(10)] long ProcessedTrades,
+    [property: Key(11)] long CountTradingConnections,
+    [property: Key(12)] long CountStreamingSymbols,
+    [property: Key(13)] long TickToTradeAbove1Ms,
+    [property: Key(14)] long TickToTradeBelow1Ms,
+    [property: Key(15)] double TickToTradeAverageMs
 );
-
-
-    
+  
   [MessagePackObject]
   public record struct MsgTCLog(
       [property: Key(0)] long Ts,
@@ -684,9 +770,12 @@ public class EventGateway
     public event Action<RabbitMsgWrapper, MsgSnapshotGroupDCNodes> EventMsgSnapshotGroupDCNodes;
     public event Action<RabbitMsgWrapper, MsgSnapshotNodesSlim> EventMsgSnapshotNodesSlim;
     public event Action<RabbitMsgWrapper, MsgSnapshotFullSingleAgentNode> EventMsgSnapshotFullSingleAgentNode;
-    public event Action<RabbitMsgWrapper, MsgSnapshotSingleAgentLiveTrades> EventMsgSnapshotSingleAgentLiveTrades;
-    public event Action<RabbitMsgWrapper, MsgSnapshotSingleAgentMarketData> EventMsgSnapshotSingleAgentMarketData;
     public event Action<RabbitMsgWrapper, MsgSnapshotSingleAgentInformation> EventMsgSnapshotSingleAgentInformation;
+    public event Action<RabbitMsgWrapper, MsgSnapshotSingleAgentStatus> EventMsgSnapshotSingleAgentStatus;
+    public event Action<RabbitMsgWrapper, MsgSnapshotSingleAgentTradingConnections> EventMsgSnapshotSingleAgentTradingConnections;
+    public event Action<RabbitMsgWrapper, MsgSnapshotSingleAgentMarketData> EventMsgSnapshotSingleAgentMarketData;
+    public event Action<RabbitMsgWrapper, MsgSnapshotSingleAgentLiveTrades> EventMsgSnapshotSingleAgentLiveTrades;
+    public event Action<RabbitMsgWrapper, MsgSnapshotSingleAgentMetrics> EventMsgSnapshotSingleAgentMetrics;
     public event Action<RabbitMsgWrapper, MsgTCLog> EventMsgTCLog;
   
     public string Send(MsgRegisterMicroService @event,
@@ -1573,7 +1662,7 @@ public class EventGateway
         return msg.ActionId;
     }
     
-    public string Send(MsgSnapshotSingleAgentLiveTrades @event,
+    public string Send(MsgSnapshotSingleAgentInformation @event,
         long? ts = null,
         string severity = null,
         string actionId = null,
@@ -1589,7 +1678,7 @@ public class EventGateway
             Severity = severity ?? "Information",
             ActionId = actionId ?? Guid.NewGuid().ToString(),
             Exchange = "exchange.snapshot.notification",
-            MessageType = "MsgSnapshotSingleAgentLiveTrades",
+            MessageType = "MsgSnapshotSingleAgentInformation",
             ByteMsg = MessagePackSerializer.Serialize(@event),
             OrganizationId = organizationId ?? "System",
             UserId = userId ?? "System",
@@ -1603,7 +1692,75 @@ public class EventGateway
         };
 
         _publisher.Publish(msg);
-        //Console.WriteLine("Sent MsgSnapshotSingleAgentLiveTrades " + msg.ToString());
+        //Console.WriteLine("Sent MsgSnapshotSingleAgentInformation " + msg.ToString());
+        return msg.ActionId;
+    }
+    
+    public string Send(MsgSnapshotSingleAgentStatus @event,
+        long? ts = null,
+        string severity = null,
+        string actionId = null,
+        string organizationId = null,
+        string userId = null,
+        string nodeId = null,
+        string userEmail = null
+    )
+    {
+        var msg = new RabbitMsgWrapper()
+        {
+            Ts = ts ?? DateTime.UtcNow.Ticks,
+            Severity = severity ?? "Information",
+            ActionId = actionId ?? Guid.NewGuid().ToString(),
+            Exchange = "exchange.snapshot.notification",
+            MessageType = "MsgSnapshotSingleAgentStatus",
+            ByteMsg = MessagePackSerializer.Serialize(@event),
+            OrganizationId = organizationId ?? "System",
+            UserId = userId ?? "System",
+            NodeId = nodeId ?? "System",
+            UserEmail = userEmail ?? "System",
+
+            AppName = _eventGatewayConfiguration.ServiceName,
+            AppVersion = _eventGatewayConfiguration.ServiceVersion,
+            SharedVersion = _eventGatewayConfiguration.ServiceSharedVersion,
+            SchemaVersion = MsgSchema.Version.ToString()
+        };
+
+        _publisher.Publish(msg);
+        //Console.WriteLine("Sent MsgSnapshotSingleAgentStatus " + msg.ToString());
+        return msg.ActionId;
+    }
+    
+    public string Send(MsgSnapshotSingleAgentTradingConnections @event,
+        long? ts = null,
+        string severity = null,
+        string actionId = null,
+        string organizationId = null,
+        string userId = null,
+        string nodeId = null,
+        string userEmail = null
+    )
+    {
+        var msg = new RabbitMsgWrapper()
+        {
+            Ts = ts ?? DateTime.UtcNow.Ticks,
+            Severity = severity ?? "Information",
+            ActionId = actionId ?? Guid.NewGuid().ToString(),
+            Exchange = "exchange.snapshot.notification",
+            MessageType = "MsgSnapshotSingleAgentTradingConnections",
+            ByteMsg = MessagePackSerializer.Serialize(@event),
+            OrganizationId = organizationId ?? "System",
+            UserId = userId ?? "System",
+            NodeId = nodeId ?? "System",
+            UserEmail = userEmail ?? "System",
+
+            AppName = _eventGatewayConfiguration.ServiceName,
+            AppVersion = _eventGatewayConfiguration.ServiceVersion,
+            SharedVersion = _eventGatewayConfiguration.ServiceSharedVersion,
+            SchemaVersion = MsgSchema.Version.ToString()
+        };
+
+        _publisher.Publish(msg);
+        //Console.WriteLine("Sent MsgSnapshotSingleAgentTradingConnections " + msg.ToString());
         return msg.ActionId;
     }
     
@@ -1641,7 +1798,7 @@ public class EventGateway
         return msg.ActionId;
     }
     
-    public string Send(MsgSnapshotSingleAgentInformation @event,
+    public string Send(MsgSnapshotSingleAgentLiveTrades @event,
         long? ts = null,
         string severity = null,
         string actionId = null,
@@ -1657,7 +1814,7 @@ public class EventGateway
             Severity = severity ?? "Information",
             ActionId = actionId ?? Guid.NewGuid().ToString(),
             Exchange = "exchange.snapshot.notification",
-            MessageType = "MsgSnapshotSingleAgentInformation",
+            MessageType = "MsgSnapshotSingleAgentLiveTrades",
             ByteMsg = MessagePackSerializer.Serialize(@event),
             OrganizationId = organizationId ?? "System",
             UserId = userId ?? "System",
@@ -1671,7 +1828,41 @@ public class EventGateway
         };
 
         _publisher.Publish(msg);
-        //Console.WriteLine("Sent MsgSnapshotSingleAgentInformation " + msg.ToString());
+        //Console.WriteLine("Sent MsgSnapshotSingleAgentLiveTrades " + msg.ToString());
+        return msg.ActionId;
+    }
+    
+    public string Send(MsgSnapshotSingleAgentMetrics @event,
+        long? ts = null,
+        string severity = null,
+        string actionId = null,
+        string organizationId = null,
+        string userId = null,
+        string nodeId = null,
+        string userEmail = null
+    )
+    {
+        var msg = new RabbitMsgWrapper()
+        {
+            Ts = ts ?? DateTime.UtcNow.Ticks,
+            Severity = severity ?? "Information",
+            ActionId = actionId ?? Guid.NewGuid().ToString(),
+            Exchange = "exchange.snapshot.notification",
+            MessageType = "MsgSnapshotSingleAgentMetrics",
+            ByteMsg = MessagePackSerializer.Serialize(@event),
+            OrganizationId = organizationId ?? "System",
+            UserId = userId ?? "System",
+            NodeId = nodeId ?? "System",
+            UserEmail = userEmail ?? "System",
+
+            AppName = _eventGatewayConfiguration.ServiceName,
+            AppVersion = _eventGatewayConfiguration.ServiceVersion,
+            SharedVersion = _eventGatewayConfiguration.ServiceSharedVersion,
+            SchemaVersion = MsgSchema.Version.ToString()
+        };
+
+        _publisher.Publish(msg);
+        //Console.WriteLine("Sent MsgSnapshotSingleAgentMetrics " + msg.ToString());
         return msg.ActionId;
     }
     
@@ -1901,10 +2092,24 @@ public class EventGateway
             return;
         }
     
-        if (msg.MessageType == "MsgSnapshotSingleAgentLiveTrades")
+        if (msg.MessageType == "MsgSnapshotSingleAgentInformation")
         {
-            EventMsgSnapshotSingleAgentLiveTrades?.Invoke(msg, MessagePackSerializer.Deserialize<MsgSnapshotSingleAgentLiveTrades>(msg.ByteMsg));
-            //Console.WriteLine("Received MsgSnapshotSingleAgentLiveTrades " + msg.ToString());
+            EventMsgSnapshotSingleAgentInformation?.Invoke(msg, MessagePackSerializer.Deserialize<MsgSnapshotSingleAgentInformation>(msg.ByteMsg));
+            //Console.WriteLine("Received MsgSnapshotSingleAgentInformation " + msg.ToString());
+            return;
+        }
+    
+        if (msg.MessageType == "MsgSnapshotSingleAgentStatus")
+        {
+            EventMsgSnapshotSingleAgentStatus?.Invoke(msg, MessagePackSerializer.Deserialize<MsgSnapshotSingleAgentStatus>(msg.ByteMsg));
+            //Console.WriteLine("Received MsgSnapshotSingleAgentStatus " + msg.ToString());
+            return;
+        }
+    
+        if (msg.MessageType == "MsgSnapshotSingleAgentTradingConnections")
+        {
+            EventMsgSnapshotSingleAgentTradingConnections?.Invoke(msg, MessagePackSerializer.Deserialize<MsgSnapshotSingleAgentTradingConnections>(msg.ByteMsg));
+            //Console.WriteLine("Received MsgSnapshotSingleAgentTradingConnections " + msg.ToString());
             return;
         }
     
@@ -1915,10 +2120,17 @@ public class EventGateway
             return;
         }
     
-        if (msg.MessageType == "MsgSnapshotSingleAgentInformation")
+        if (msg.MessageType == "MsgSnapshotSingleAgentLiveTrades")
         {
-            EventMsgSnapshotSingleAgentInformation?.Invoke(msg, MessagePackSerializer.Deserialize<MsgSnapshotSingleAgentInformation>(msg.ByteMsg));
-            //Console.WriteLine("Received MsgSnapshotSingleAgentInformation " + msg.ToString());
+            EventMsgSnapshotSingleAgentLiveTrades?.Invoke(msg, MessagePackSerializer.Deserialize<MsgSnapshotSingleAgentLiveTrades>(msg.ByteMsg));
+            //Console.WriteLine("Received MsgSnapshotSingleAgentLiveTrades " + msg.ToString());
+            return;
+        }
+    
+        if (msg.MessageType == "MsgSnapshotSingleAgentMetrics")
+        {
+            EventMsgSnapshotSingleAgentMetrics?.Invoke(msg, MessagePackSerializer.Deserialize<MsgSnapshotSingleAgentMetrics>(msg.ByteMsg));
+            //Console.WriteLine("Received MsgSnapshotSingleAgentMetrics " + msg.ToString());
             return;
         }
     
