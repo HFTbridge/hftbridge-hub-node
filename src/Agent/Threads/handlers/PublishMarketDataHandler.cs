@@ -64,8 +64,11 @@ namespace HFTbridge.Agent
             var msg = new MsgMDRoutingBulk()
             {
                 Ts = DateTime.UtcNow.Ticks,
-                Ticks = _buffer.ToArray()
+                Ticks = _buffer.ToArray(),
+                NodeId = Program.NodeId
             };
+
+            //Console.WriteLine(Program.NodeId);
 
             _buffer.Clear();
             _engine.InvokeOnMsgMDRoutingBulk(msg);

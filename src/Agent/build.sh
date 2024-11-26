@@ -12,7 +12,7 @@ outDir="$scriptPath/out"
 dotnet build $projectPath -c Release -o $outDir
 
 # Build the project
-dotnet publish $projectPath -r win-x64 -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true --self-contained true -o $outDir /p:UseAppHost=true
+dotnet publish $projectPath -r win-x64 -p:PublishSingleFile=true --self-contained true -o $outDir /p:UseAppHost=true
 
 echo "Build successful. Output located in 'out' directory."
 

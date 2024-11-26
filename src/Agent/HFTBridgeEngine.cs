@@ -13,6 +13,7 @@ namespace HFTbridge.Node.Agent
     public class HFTBridgeEngine
     {
         private readonly Dictionary<string,SubMsgSnapshotFullSingleAgentNodeTC> _tradingConnections;
+
         public readonly Dictionary<string,ITCAdapter> TradingConnections;
         private readonly TCFactory _tc;
         private readonly FastFeedManager _fastFeed;
@@ -22,13 +23,17 @@ namespace HFTbridge.Node.Agent
         private readonly Disruptor<FastMarketDataEvent> _fastFeedAnalysisPipe;
 
         public event Action<MsgMDRoutingBulk> OnMsgMDRoutingBulk;
+        public event Action<MsgTCLog, string, string> OnMsgTCLog;
+        
 
 
         public HFTBridgeEngine()
         {
-            MDStore = new StoreMarketData();
+       
 
             TradingConnections = new Dictionary<string, ITCAdapter>();
+
+            MDStore = new StoreMarketData(TradingConnections);
 
             _tradingConnections = new Dictionary<string, SubMsgSnapshotFullSingleAgentNodeTC>();
             _tc = new TCFactory();
@@ -82,7 +87,9 @@ namespace HFTbridge.Node.Agent
                 msg.BrokerId, 
                 msg.TradingAccountId,
                 organizationId, 
-                userId);
+                userId,
+                true
+                );
 
          //   Console.WriteLine("TEST === " +  msg.TradingAccountId + "|" + organizationId);
             //var adapter = _tc.CreateTCAdapter(msg.TradingAccountProvider, msg.TradingAccountConnectionString, msg.BrokerId);
@@ -91,7 +98,17 @@ namespace HFTbridge.Node.Agent
 
             // ADD LOGGING
             adapter.TCLogger.OnLogEntry += logEntry =>{
-                Console.WriteLine(logEntry.Message);
+                
+                
+                var msgLog = new MsgTCLog()
+                {
+                    Ts = logEntry.Ts,
+                    TradingAccountId = msg.TradingAccountId,
+                    Severity = (int)logEntry.Severity,
+                    Message = logEntry.Message
+                };
+                OnMsgTCLog?.Invoke(msgLog, organizationId, userId);
+
                 return;
             };
 
@@ -122,9 +139,18 @@ namespace HFTbridge.Node.Agent
         public void Disconnect( MsgStopTradingAccountRequest msg, string organizationId, string userId)
         {
             _tradingConnections.Remove(msg.TradingAccountId);
+            var adapter = TradingConnections[msg.TradingAccountId];
+            adapter.Disconnect();
+            TradingConnections.Remove(msg.TradingAccountId);
+
         }
 
         public List<SubMsgSnapshotFullSingleAgentNodeTC> GetConnectionRecords()
+        {
+            return _tradingConnections.Values.ToList();
+        }
+
+        public List<SubMsgSnapshotFullSingleAgentNodeTC> GetConnections()
         {
             return _tradingConnections.Values.ToList();
         }

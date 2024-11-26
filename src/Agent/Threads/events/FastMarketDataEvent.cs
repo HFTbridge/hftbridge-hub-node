@@ -55,9 +55,9 @@ namespace HFTbridge.Agent
                 Digits: this.Digits,
                 Ask: this.Ask,
                 Bid: this.Bid,
-                AveragePrice: (this.Ask + this.Bid) / 2,
-                Spread: this.Ask - this.Bid,
-                TradingConnectionQuotes: ConvertToMDRoutingItems(TradinConnectionsQuotes)
+                AveragePrice: Math.Round((this.Ask + this.Bid) / 2,this.Digits),
+                Spread:  Math.Round((this.Ask - this.Bid) * Math.Pow(10,this.Digits),0),
+                TradingConnectionQuotes: ConvertToMDRoutingItems(TradinConnectionsQuotes, this.Ask, this.Bid)
             );
             // foreach (var item in msg.TradingConnectionQuotes)
             // {
@@ -66,28 +66,29 @@ namespace HFTbridge.Agent
             return msg;
         }
 
-        public static SubMsgMDRoutingItem[] ConvertToMDRoutingItems(List<TCSymbolQuote> symbolQuotes)
-        {
-            return symbolQuotes.Select(sq => new SubMsgMDRoutingItem(
-                Ts: sq.Ts,
-                OrganizationId: sq.OrganizationId,
-                TradingAccountId: sq.TradingAccountId,
-                SymbolKey: sq.Symbolkey,
-                SymbolRouting: sq.SymbolRouting,
-                Digits: (int)sq.Digits,
-                Ask: sq.Ask,
-                Bid: sq.Bid,
-                AveragePrice: sq.AvgPrice,
-                Spread: sq.Spread,
-                AskOffset: 0, // Placeholder, replace with real value if available
-                BidOffset: 0, // Placeholder, replace with real value if available
-                AskAfterOffset: sq.Ask, // Placeholder, logic might be needed here
-                BidAfterOffset: sq.Bid, // Placeholder, logic might be needed here
-                BuyGap: 13, // Placeholder, replace with real value if available
-                SellGap: 0, // Placeholder, replace with real value if available
-                IsBuyGap: true, // Placeholder, replace with real value if available
-                IsSellGap: false  // Placeholder, replace with real value if available
-            )).ToArray();
-        }
+    public static SubMsgMDRoutingItem[] ConvertToMDRoutingItems(List<TCSymbolQuote> symbolQuotes, double fastAsk, double fastBid)
+    {
+        return symbolQuotes.Select(sq => new SubMsgMDRoutingItem(
+            Ts: sq.Ts,
+            OrganizationId: sq.OrganizationId,
+            TradingAccountId: sq.TradingAccountId,
+            SymbolKey: sq.Symbolkey,
+            SymbolRouting: sq.SymbolRouting,
+            Digits: (int)sq.Digits,
+            Ask: sq.Ask,
+            Bid: sq.Bid,
+            AveragePrice: sq.AvgPrice,
+            Spread: sq.Spread,
+            AskOffset: 0, 
+            BidOffset: 0, 
+            AskAfterOffset: sq.Ask, 
+            BidAfterOffset: sq.Bid,
+            BuyGap: Math.Round((fastBid - sq.Ask)* Math.Pow(10,sq.Digits),0),
+            SellGap: Math.Round((sq.Bid - fastAsk)* Math.Pow(10,sq.Digits),0),
+            IsBuyGap: (fastBid - sq.Ask) > 0, // Set to true if BuyGap > 0
+            IsSellGap: (sq.Bid - fastAsk) > 0 // Set to true if SellGap > 0
+        )).ToArray();
+    }
+
     }
 }

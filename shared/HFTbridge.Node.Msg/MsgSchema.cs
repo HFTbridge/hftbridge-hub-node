@@ -9,7 +9,7 @@ namespace HFTbridge.Msg;
 
 public static class MsgSchema
 {
-    public static int Version = 26;
+    public static int Version = 27;
 
 //--------------------------------------------------------------------------------------------------------------------------------------------
 //------[ DECODE MESSAGE FROM RABBIT MQ LIBRARAY  ]
@@ -122,9 +122,46 @@ public static class MsgSchema
         throw new HeaderException { Header = headerName };
     }
 
-    
-
+//     public static readonly Dictionary<string, string> ExchangeMessageLookup = new Dictionary<string, string>{
+//         { "exchange.micro.services.mesh", "MsgRegisterMicroService" },
+//         { "exchange.micro.services.mesh", "MsgMicroServiceHealthSummaryRequest" },
+//         { "exchange.micro.services.mesh", "MsgMicroServiceHealthSummaryNotification" },
+//         { "exchange.micro.services.mesh", "MsgMicroServiceHealthSummarySnapshot" },
+//         { "exchange.agent.chat", "MsgChat" },
+//         { "exchange.agent.status", "MsgTradingConnectionStatus" },
+//         { "exchange.agent.status", "MsgTradingConnectionSubscriptionStatus" },
+//         { "exchange.agent.status", "MsgTradingConnectionTradeStatus" },
+//         { "exchange.agent.request", "MsgStartTradingAccountRequest" },
+//         { "exchange.agent.request", "MsgStopTradingAccountRequest" },
+//         { "exchange.agent.request", "MsgSubscribeSymbolRequest" },
+//         { "exchange.agent.request", "MsgUnSubscribeSymbolRequest" },
+//         { "exchange.agent.request", "MsgOpenTradeManualRequest" },
+//         { "exchange.agent.request", "MsgCloseTradeManualRequest" },
+//         { "exchange.agent.response", "MsgStartTradingAccountResponse" },
+//         { "exchange.agent.response", "MsgStopTradingAccountResponse" },
+//         { "exchange.agent.response", "MsgSubscribeSymbolResponse" },
+//         { "exchange.agent.response", "MsgUnSubscribeSymbolResponse" },
+//         { "exchange.agent.response", "MsgOpenTradeManualResponse" },
+//         { "exchange.agent.response", "MsgCloseTradeManualResponse" },
+//         { "exchange.agent.md", "MsgMDRoutingBulk" },
+//         { "exchange.agent.td", "MsgTDResponseBulk" },
+//         { "exchange.snapshot.notification", "MsgSnapshotDCNodesSlim" },
+//         { "exchange.snapshot.notification", "MsgSnapshotSingleDCNode" },
+//         { "exchange.snapshot.notification", "MsgSnapshotGroupDCNodes" },
+//         { "exchange.snapshot.notification", "MsgSnapshotNodesSlim" },
+//         { "exchange.snapshot.notification", "MsgSnapshotFullSingleAgentNode" },
+//         { "exchange.snapshot.notification", "MsgSnapshotSingleAgentInformation" },
+//         { "exchange.snapshot.notification", "MsgSnapshotSingleAgentStatus" },
+//         { "exchange.snapshot.notification", "MsgSnapshotSingleAgentTradingConnections" },
+//         { "exchange.snapshot.notification", "MsgSnapshotSingleAgentMarketData" },
+//         { "exchange.snapshot.notification", "MsgSnapshotSingleAgentLiveTrades" },
+//         { "exchange.snapshot.notification", "MsgSnapshotSingleAgentMetrics" },
+//         { "exchange.tc.logs", "MsgTCLog" }
+//   };
 }
+
+
+
 
 public class HeaderException : Exception
 {
@@ -164,16 +201,6 @@ public record struct RabbitMsgWrapper(
 //--------------------------------------------------------------------------------------------------------------------------------------------
 
 // SHOULD BE LIKE THIS : TODO! Please write in JS the function to generate this dictionary
-// public static readonly Dictionary<string, string> ExchangeMessageLookup = new Dictionary<string, string>
-// {
-//     { "exchange.agent.md", "MsgMDRoutingBulk" },
-//     { "exchange.snapshot.notification", "MsgSnapshotSingleAgentStatus" },
-//     { "exchange.snapshot.notification", "MsgSnapshotSingleAgentTradingConnections" },
-//     { "exchange.snapshot.notification", "MsgSnapshotSingleAgentMarketData" },
-//     { "exchange.snapshot.notification", "MsgSnapshotSingleAgentLiveTrades" },
-//     { "exchange.snapshot.notification", "MsgSnapshotSingleAgentMetrics" }
-// };
-
 
 
 //--------------------------------------------------------------------------------------------------------------------------------------------
@@ -424,7 +451,9 @@ public record struct MsgCloseTradeManualResponse(
 [MessagePackObject]
 public record struct MsgMDRoutingBulk(
   [property: Key(0)] long Ts,
-  [property: Key(1)] SubMsgMDRouting[] Ticks
+  [property: Key(1)] SubMsgMDRouting[] Ticks,
+  [property: Key(2)] string NodeId
+
 );
 
 [MessagePackObject]
@@ -464,6 +493,39 @@ public record struct SubMsgMDRoutingItem(
   [property: Key(17)] bool IsSellGap
 );
   
+  
+  [MessagePackObject]
+  public record struct MsgTDResponseBulk(
+    [property: Key(0)] long Ts,
+    [property: Key(1)] SubMsgTDResponse[] Response,
+    [property: Key(2)] string NodeId
+
+  );
+  
+  [MessagePackObject]
+  public record struct SubMsgTDResponse(
+    [property: Key(0)] string SymbolKey,
+    [property: Key(1)] string SymbolRouting,
+    [property: Key(2)] string TradeOrigin,
+    [property: Key(3)] bool IsBuy,
+    [property: Key(4)] string TradeResponseType,
+    [property: Key(5)] double LotSize,
+    [property: Key(6)] double RequestPrice,
+    [property: Key(7)] int Digits,
+    [property: Key(8)] string TradeId,
+    [property: Key(9)] long RequestTs,
+    [property: Key(10)] long ResponseTs,
+    [property: Key(11)] double ProcessingMs,
+    [property: Key(12)] bool IsSuccess,
+    [property: Key(13)] string Message,
+    [property: Key(14)] double ResponsePrice,
+    [property: Key(15)] double Slippage,
+    [property: Key(16)] string TicketId,
+    [property: Key(17)] string OrganizationId,
+    [property: Key(18)] string TradingAccountId,
+    [property: Key(19)] string UserId
+  );
+    
 [MessagePackObject]
 public record struct MsgSnapshotDCNodesSlim(
     [property: Key(0)] long Ts,
@@ -765,6 +827,7 @@ public class EventGateway
     public event Action<RabbitMsgWrapper, MsgOpenTradeManualResponse> EventMsgOpenTradeManualResponse;
     public event Action<RabbitMsgWrapper, MsgCloseTradeManualResponse> EventMsgCloseTradeManualResponse;
     public event Action<RabbitMsgWrapper, MsgMDRoutingBulk> EventMsgMDRoutingBulk;
+    public event Action<RabbitMsgWrapper, MsgTDResponseBulk> EventMsgTDResponseBulk;
     public event Action<RabbitMsgWrapper, MsgSnapshotDCNodesSlim> EventMsgSnapshotDCNodesSlim;
     public event Action<RabbitMsgWrapper, MsgSnapshotSingleDCNode> EventMsgSnapshotSingleDCNode;
     public event Action<RabbitMsgWrapper, MsgSnapshotGroupDCNodes> EventMsgSnapshotGroupDCNodes;
@@ -1492,6 +1555,40 @@ public class EventGateway
         return msg.ActionId;
     }
     
+    public string Send(MsgTDResponseBulk @event,
+        long? ts = null,
+        string severity = null,
+        string actionId = null,
+        string organizationId = null,
+        string userId = null,
+        string nodeId = null,
+        string userEmail = null
+    )
+    {
+        var msg = new RabbitMsgWrapper()
+        {
+            Ts = ts ?? DateTime.UtcNow.Ticks,
+            Severity = severity ?? "Information",
+            ActionId = actionId ?? Guid.NewGuid().ToString(),
+            Exchange = "exchange.agent.td",
+            MessageType = "MsgTDResponseBulk",
+            ByteMsg = MessagePackSerializer.Serialize(@event),
+            OrganizationId = organizationId ?? "System",
+            UserId = userId ?? "System",
+            NodeId = nodeId ?? "System",
+            UserEmail = userEmail ?? "System",
+
+            AppName = _eventGatewayConfiguration.ServiceName,
+            AppVersion = _eventGatewayConfiguration.ServiceVersion,
+            SharedVersion = _eventGatewayConfiguration.ServiceSharedVersion,
+            SchemaVersion = MsgSchema.Version.ToString()
+        };
+
+        _publisher.Publish(msg);
+        //Console.WriteLine("Sent MsgTDResponseBulk " + msg.ToString());
+        return msg.ActionId;
+    }
+    
     public string Send(MsgSnapshotDCNodesSlim @event,
         long? ts = null,
         string severity = null,
@@ -2054,6 +2151,13 @@ public class EventGateway
         {
             EventMsgMDRoutingBulk?.Invoke(msg, MessagePackSerializer.Deserialize<MsgMDRoutingBulk>(msg.ByteMsg));
             //Console.WriteLine("Received MsgMDRoutingBulk " + msg.ToString());
+            return;
+        }
+    
+        if (msg.MessageType == "MsgTDResponseBulk")
+        {
+            EventMsgTDResponseBulk?.Invoke(msg, MessagePackSerializer.Deserialize<MsgTDResponseBulk>(msg.ByteMsg));
+            //Console.WriteLine("Received MsgTDResponseBulk " + msg.ToString());
             return;
         }
     

@@ -23,6 +23,7 @@ namespace HFTbridge.Node.Agent
             _eventGateway.EventMsgUnSubscribeSymbolRequest += HandleMsg;
 
             _engine.OnMsgMDRoutingBulk += HandleMsg;
+            _engine.OnMsgTCLog += HandleMsg;
         }
 
         // Handlers
@@ -238,6 +239,26 @@ namespace HFTbridge.Node.Agent
             catch (System.Exception e)
             {
                 Console.WriteLine("ERROR PUBLISHING MARKET DATA TO MOTHERSHIP !!!!!!!!!");
+            }
+        }
+
+        private void HandleMsg(MsgTCLog @event, string organizationId, string userId)
+        {
+            try
+            {
+                _eventGateway.Send(@event, 
+                    organizationId: organizationId,
+                    severity: "Debug",
+                    actionId: "TCLOG",
+                    userId: userId,
+                    nodeId: _nodeId,
+                    userEmail: "System"
+                );
+                Console.WriteLine("TCLOG --- " + @event.Message);
+            }
+            catch (System.Exception e)
+            {
+                Console.WriteLine("ERROR PUBLISHING TCLOG TO MOTHERSHIP !!!!!!!!!");
             }
         }
     }

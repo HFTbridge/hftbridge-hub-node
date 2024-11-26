@@ -37,7 +37,7 @@ namespace Agent.Models
             Ask = ask;
             Bid = bid;
             AveragePrice = (ask + bid) / 2;
-            Spread = ask - bid;
+            Spread = Math.Round((ask - bid) * Math.Pow(10,Digits),0);
             TickNumber++;
             Ts = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
         }
@@ -52,10 +52,13 @@ namespace Agent.Models
 
         private Dictionary<string, StoreMarketDataItem> _store;
 
-        public StoreMarketData()
+        private readonly Dictionary<string,ITCAdapter> _tradingConnections;
+
+        public StoreMarketData(Dictionary<string,ITCAdapter> tradingConnections)
         {
             _nodeId = "N/A";
             _store = new Dictionary<string, StoreMarketDataItem>();
+            _tradingConnections = tradingConnections;
         }
 
         public void Add(string organizationId, string tradingAccountId, string symbolKey, string symbolRouting, int digits)
@@ -81,6 +84,7 @@ namespace Agent.Models
 
         public void Update(string tradingAccountId, string symbolKey, double ask, double bid)
         {
+
             string key = tradingAccountId + "|" + symbolKey;
             if (_store.ContainsKey(key))
             {
@@ -111,6 +115,31 @@ namespace Agent.Models
                 item.Delta1M,
                 item.Delta5M
             )).ToList();
+
+            // Collect from trading accounts
+            foreach (var itemTC in _tradingConnections.Values)
+            {
+                var tcQuotes = itemTC.TCSymbolQuotes.Values.Select(item => new SubMsgSnapshotSingleAgentMarketDataQuote(
+                    item.Ts, //
+                    item.TickNumber, //
+                    item.OrganizationId, //
+                    item.TradingAccountId, //
+                    item.Symbolkey, //
+                    item.SymbolRouting, //
+                    (int)item.Digits, //
+                    item.Ask, //
+                    item.Bid, //
+                    item.AvgPrice,
+                    item.Spread, //
+                    0,
+                    0,
+                    0,
+                    0
+                )).ToList();
+
+                quotes.AddRange(tcQuotes);
+            }
+
 
             // Create the snapshot model
             var snapshot = new MsgSnapshotSingleAgentMarketData(

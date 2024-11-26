@@ -24,6 +24,7 @@
     <PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
         <PackageReference Include="RabbitMQ.Client" Version="6.5.0" />
         <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+        <PackageReference Include="Hardware.Info" Version="100.0.1.1" />
   </ItemGroup>
 
   <!-- <ItemGroup>
@@ -43,8 +44,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="HFTbridge.TCLIB" Version="1.1.9"/>
-    <PackageReference Include="HFTbridge.TC.Shared" Version="1.0.3"/>
+    <PackageReference Include="HFTbridge.TCLIB" Version="1.1.37"/>
+    <PackageReference Include="HFTbridge.TC.Shared" Version="1.0.18"/>
+       <!-- <PackageReference Include="HFTbridge.TCLIB" Version="1.1.18"/>
+    <PackageReference Include="HFTbridge.TC.Shared" Version="1.0.6"/> -->
   </ItemGroup>
 
       <ItemGroup>

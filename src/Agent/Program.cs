@@ -1,17 +1,22 @@
 ﻿using HFTbridge.Node.Shared.Services;
 using HFTbridge.Msg;
 using HFTbridge.TCLIB;
+using HFTbridge.Agent.Services;
 
 namespace HFTbridge.Node.Agent
 {
     class Program
     {
+        public static string NodeId = "Mike-Agent";
+        // public static string NodeId = "DEV-LD4";
         static async Task Main(string[] args)
         {
             var organizationId = "PUBLIC";
-            //var nodeId = "MIKE-DEV";
-            var nodeId = "Mike-Dev";
+            // var nodeId = "DEV-LD4-1";
+            var nodeId = NodeId;
 
+            var hardware = new HardwareMetricsManager();
+            var geo = new GeoLocationManager();
             
 
             var engine = new HFTBridgeEngine();
@@ -21,9 +26,61 @@ namespace HFTbridge.Node.Agent
             var handler = new MsgHandler(mothershipService._eventGateway, engine, nodeId, organizationId);
             mothershipService.Start();
 
+            // Snapshot Manager
+            var snapshotTC = new SnapshotManagerTradingConnections(
+                engine,
+                mothershipService._eventGateway,
+                organizationId,
+                nodeId,
+                hardware,
+                geo
+            );
+
+            var snapshotAgent= new SnapshotManagerAgentStatus(
+                engine,
+                mothershipService._eventGateway,
+                organizationId,
+                nodeId,
+                hardware,
+                geo
+            );
+
+            var snapshotTrades = new SnapshotManagerLiveTrades(
+                engine,
+                mothershipService._eventGateway,
+                organizationId,
+                nodeId,
+                hardware,
+                geo
+            );
+
+            var snapshotAgentMetrics = new SnapshotManagerAgentMetrics(
+                engine,
+                mothershipService._eventGateway,
+                organizationId,
+                nodeId,
+                hardware,
+                geo
+            );
+
+            var snapshotMD = new SnapshotManagerMarketData(
+                engine,
+                mothershipService._eventGateway,
+                organizationId,
+                nodeId,
+                hardware,
+                geo
+            );
+
+            
 
             while (true)
             {
+                snapshotTC.SendSnapshot();
+                snapshotAgent.SendSnapshot();
+                snapshotTrades.SendSnapshot();
+                snapshotAgentMetrics.SendSnapshot();
+                snapshotMD.SendSnapshot();
                 // Send Snapshot Agent Details
                 // Send Snapshot TC
                 // Send Snapshot TC Symbols MD Level 1

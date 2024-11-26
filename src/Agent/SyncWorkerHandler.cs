@@ -38,11 +38,11 @@ namespace HFTbridge.Node.Agent
                 nodeId:_nodeId
             );
 
-            eventGateway.Send(_engine.MDStore.GetSnapshot(), 
-                organizationId:_organizationId,
-                severity:"Debug",
-                nodeId:_nodeId
-            );
+            // eventGateway.Send(_engine.MDStore.GetSnapshot(), 
+            //     organizationId:_organizationId,
+            //     severity:"Debug",
+            //     nodeId:_nodeId
+            // );
 
             eventGateway.Send(GetMsgSnapshotSingleAgentInformation(), 
                 organizationId:_organizationId,
@@ -50,11 +50,11 @@ namespace HFTbridge.Node.Agent
                 nodeId:_nodeId
             );
 
-            eventGateway.Send(GetMsgSnapshotSingleAgentLiveTrades(), 
-                organizationId:_organizationId,
-                severity:"Debug",
-                nodeId:_nodeId
-            );
+            // eventGateway.Send(GetMsgSnapshotSingleAgentLiveTrades(), 
+            //     organizationId:_organizationId,
+            //     severity:"Debug",
+            //     nodeId:_nodeId
+            // );
         }
 
 
