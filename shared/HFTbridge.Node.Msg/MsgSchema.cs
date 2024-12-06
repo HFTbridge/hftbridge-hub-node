@@ -9,7 +9,7 @@ namespace HFTbridge.Msg;
 
 public static class MsgSchema
 {
-    public static int Version = 27;
+    public static int Version = 33;
 
 //--------------------------------------------------------------------------------------------------------------------------------------------
 //------[ DECODE MESSAGE FROM RABBIT MQ LIBRARAY  ]
@@ -25,8 +25,6 @@ public static class MsgSchema
         string Exchange = args.Exchange;
 
         long Ts = 0;
-        // int SchemaVersion = 0;
-        string testTs = null;
 
         ExtractHeader(args, "ActionId", value => ActionId = value);
         ExtractHeader(args, "AppName", value => AppName = value);
@@ -122,42 +120,42 @@ public static class MsgSchema
         throw new HeaderException { Header = headerName };
     }
 
-//     public static readonly Dictionary<string, string> ExchangeMessageLookup = new Dictionary<string, string>{
-//         { "exchange.micro.services.mesh", "MsgRegisterMicroService" },
-//         { "exchange.micro.services.mesh", "MsgMicroServiceHealthSummaryRequest" },
-//         { "exchange.micro.services.mesh", "MsgMicroServiceHealthSummaryNotification" },
-//         { "exchange.micro.services.mesh", "MsgMicroServiceHealthSummarySnapshot" },
-//         { "exchange.agent.chat", "MsgChat" },
-//         { "exchange.agent.status", "MsgTradingConnectionStatus" },
-//         { "exchange.agent.status", "MsgTradingConnectionSubscriptionStatus" },
-//         { "exchange.agent.status", "MsgTradingConnectionTradeStatus" },
-//         { "exchange.agent.request", "MsgStartTradingAccountRequest" },
-//         { "exchange.agent.request", "MsgStopTradingAccountRequest" },
-//         { "exchange.agent.request", "MsgSubscribeSymbolRequest" },
-//         { "exchange.agent.request", "MsgUnSubscribeSymbolRequest" },
-//         { "exchange.agent.request", "MsgOpenTradeManualRequest" },
-//         { "exchange.agent.request", "MsgCloseTradeManualRequest" },
-//         { "exchange.agent.response", "MsgStartTradingAccountResponse" },
-//         { "exchange.agent.response", "MsgStopTradingAccountResponse" },
-//         { "exchange.agent.response", "MsgSubscribeSymbolResponse" },
-//         { "exchange.agent.response", "MsgUnSubscribeSymbolResponse" },
-//         { "exchange.agent.response", "MsgOpenTradeManualResponse" },
-//         { "exchange.agent.response", "MsgCloseTradeManualResponse" },
-//         { "exchange.agent.md", "MsgMDRoutingBulk" },
-//         { "exchange.agent.td", "MsgTDResponseBulk" },
-//         { "exchange.snapshot.notification", "MsgSnapshotDCNodesSlim" },
-//         { "exchange.snapshot.notification", "MsgSnapshotSingleDCNode" },
-//         { "exchange.snapshot.notification", "MsgSnapshotGroupDCNodes" },
-//         { "exchange.snapshot.notification", "MsgSnapshotNodesSlim" },
-//         { "exchange.snapshot.notification", "MsgSnapshotFullSingleAgentNode" },
-//         { "exchange.snapshot.notification", "MsgSnapshotSingleAgentInformation" },
-//         { "exchange.snapshot.notification", "MsgSnapshotSingleAgentStatus" },
-//         { "exchange.snapshot.notification", "MsgSnapshotSingleAgentTradingConnections" },
-//         { "exchange.snapshot.notification", "MsgSnapshotSingleAgentMarketData" },
-//         { "exchange.snapshot.notification", "MsgSnapshotSingleAgentLiveTrades" },
-//         { "exchange.snapshot.notification", "MsgSnapshotSingleAgentMetrics" },
-//         { "exchange.tc.logs", "MsgTCLog" }
-//   };
+    public static readonly Dictionary<string, string> ExchangeMessageLookup = new Dictionary<string, string>{
+       { "MsgRegisterMicroService", "exchange.micro.services.mesh" },
+       { "MsgMicroServiceHealthSummaryRequest", "exchange.micro.services.mesh" },
+       { "MsgMicroServiceHealthSummaryNotification", "exchange.micro.services.mesh" },
+       { "MsgMicroServiceHealthSummarySnapshot", "exchange.micro.services.mesh" },
+       { "MsgChat", "exchange.agent.chat" },
+       { "MsgTradingConnectionStatus", "exchange.agent.status" },
+       { "MsgTradingConnectionSubscriptionStatus", "exchange.agent.status" },
+       { "MsgTradingConnectionTradeStatus", "exchange.agent.status" },
+       { "MsgStartTradingAccountRequest", "exchange.agent.request" },
+       { "MsgStopTradingAccountRequest", "exchange.agent.request" },
+       { "MsgSubscribeSymbolRequest", "exchange.agent.request" },
+       { "MsgUnSubscribeSymbolRequest", "exchange.agent.request" },
+       { "MsgOpenTradeManualRequest", "exchange.agent.request" },
+       { "MsgCloseTradeManualRequest", "exchange.agent.request" },
+       { "MsgStartTradingAccountResponse", "exchange.agent.response" },
+       { "MsgStopTradingAccountResponse", "exchange.agent.response" },
+       { "MsgSubscribeSymbolResponse", "exchange.agent.response" },
+       { "MsgUnSubscribeSymbolResponse", "exchange.agent.response" },
+       { "MsgOpenTradeManualResponse", "exchange.agent.response" },
+       { "MsgCloseTradeManualResponse", "exchange.agent.response" },
+       { "MsgMDRoutingBulk", "exchange.agent.md" },
+       { "MsgTDResponseBulk", "exchange.agent.td" },
+       { "MsgSnapshotDCNodesSlim", "exchange.snapshot.notification" },
+       { "MsgSnapshotSingleDCNode", "exchange.snapshot.notification" },
+       { "MsgSnapshotGroupDCNodes", "exchange.snapshot.notification" },
+       { "MsgSnapshotNodesSlim", "exchange.snapshot.notification" },
+       { "MsgSnapshotFullSingleAgentNode", "exchange.snapshot.notification" },
+       { "MsgSnapshotSingleAgentInformation", "exchange.snapshot.notification" },
+       { "MsgSnapshotSingleAgentStatus", "exchange.snapshot.notification" },
+       { "MsgSnapshotSingleAgentTradingConnections", "exchange.snapshot.notification" },
+       { "MsgSnapshotSingleAgentMarketData", "exchange.snapshot.notification" },
+       { "MsgSnapshotSingleAgentLiveTrades", "exchange.snapshot.notification" },
+       { "MsgSnapshotSingleAgentMetrics", "exchange.snapshot.notification" },
+       { "MsgTCLog", "exchange.tc.logs" }
+    };
 }
 
 
@@ -468,7 +466,8 @@ public record struct SubMsgMDRouting(
   [property: Key(7)] double Bid,
   [property: Key(8)] double AveragePrice,
   [property: Key(9)] double Spread,
-  [property: Key(10)] SubMsgMDRoutingItem[] TradingConnectionQuotes
+  [property: Key(10)] long TickCounter,
+  [property: Key(11)] SubMsgMDRoutingItem[] TradingConnectionQuotes
 );
 
 [MessagePackObject]
@@ -490,7 +489,8 @@ public record struct SubMsgMDRoutingItem(
   [property: Key(14)] double BuyGap,
   [property: Key(15)] double SellGap,
   [property: Key(16)] bool IsBuyGap,
-  [property: Key(17)] bool IsSellGap
+  [property: Key(17)] bool IsSellGap,
+  [property: Key(18)] long TickCounter
 );
   
   

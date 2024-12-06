@@ -17,11 +17,15 @@ namespace HFTbridge.Agent
         public double Ask { get; set; }
         public double Bid { get; set; }
 
+        public long TickCounter {get;set;}
+
+
         public List<TCSymbolQuote> TradinConnectionsQuotes {get;set;}
 
         public FastMarketDataEvent()
         {
             TradinConnectionsQuotes = new List<TCSymbolQuote>();
+            
         }
 
         public void CalculateProcessingTimeMs()
@@ -31,7 +35,7 @@ namespace HFTbridge.Agent
 
         }
 
-        public void Publish(string symbolKey, string symbolRouting, double ask, double bid, int digits)
+        public void Publish(string symbolKey, string symbolRouting, double ask, double bid, int digits, long tickCounter)
         {
             IncomingTickTs = DateTime.UtcNow.Ticks;
             ProcessedTickTs = 0;
@@ -40,6 +44,7 @@ namespace HFTbridge.Agent
             Bid = bid;
             Digits = digits;
             SymbolRouting = symbolRouting;
+            TickCounter = tickCounter;
         }
 
         // Create a dummy MsgMDRouting object
@@ -57,6 +62,7 @@ namespace HFTbridge.Agent
                 Bid: this.Bid,
                 AveragePrice: Math.Round((this.Ask + this.Bid) / 2,this.Digits),
                 Spread:  Math.Round((this.Ask - this.Bid) * Math.Pow(10,this.Digits),0),
+                TickCounter: this.TickCounter,
                 TradingConnectionQuotes: ConvertToMDRoutingItems(TradinConnectionsQuotes, this.Ask, this.Bid)
             );
             // foreach (var item in msg.TradingConnectionQuotes)
@@ -86,7 +92,8 @@ namespace HFTbridge.Agent
             BuyGap: Math.Round((fastBid - sq.Ask)* Math.Pow(10,sq.Digits),0),
             SellGap: Math.Round((sq.Bid - fastAsk)* Math.Pow(10,sq.Digits),0),
             IsBuyGap: (fastBid - sq.Ask) > 0, // Set to true if BuyGap > 0
-            IsSellGap: (sq.Bid - fastAsk) > 0 // Set to true if SellGap > 0
+            IsSellGap: (sq.Bid - fastAsk) > 0, // Set to true if SellGap > 0
+            TickCounter: sq.TickNumber
         )).ToArray();
     }
 

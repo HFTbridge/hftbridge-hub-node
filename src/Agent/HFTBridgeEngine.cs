@@ -21,6 +21,7 @@ namespace HFTbridge.Node.Agent
         public readonly StoreMarketData MDStore;
 
         private readonly Disruptor<FastMarketDataEvent> _fastFeedAnalysisPipe;
+        private readonly Disruptor<LowLatencyTickDataEvent> _lowLatencyMDPath;
 
         public event Action<MsgMDRoutingBulk> OnMsgMDRoutingBulk;
         public event Action<MsgTCLog, string, string> OnMsgTCLog;
@@ -38,6 +39,17 @@ namespace HFTbridge.Node.Agent
             _tradingConnections = new Dictionary<string, SubMsgSnapshotFullSingleAgentNodeTC>();
             _tc = new TCFactory();
 
+            _lowLatencyMDPath = new Disruptor<LowLatencyTickDataEvent>(() => 
+                new LowLatencyTickDataEvent(), ringBufferSize: 4096);
+
+            _lowLatencyMDPath.HandleEventsWith(
+                    new LowLatencyTickUpdateHandler() // Thread 1:  GET SYMBOLS from ALL Connected Accounts
+                )
+                .Then(new LowLatencyPublishMarketDataHandler(this));
+
+            _lowLatencyMDPath.Start();
+            
+
             _fastFeedAnalysisPipe = new Disruptor<FastMarketDataEvent>(() => 
                 new FastMarketDataEvent(), ringBufferSize: 262144);
 
@@ -47,12 +59,12 @@ namespace HFTbridge.Node.Agent
                 .Then(new UpdateMarketDataStoreHandler(MDStore))
                 .Then(new TransformMarketDataHandler()) // Thread 2:  CALCULATE GAPS
                 .Then(new StrategyMarketDataHandler()) // Thread 3: RUN STRATEGIES
-                .Then(new PublishMarketDataHandler(this)) // Thread 4: PUBLISH TO INFRASTRUCTUR
+               // .Then(new PublishMarketDataHandler(this)) // Thread 4: PUBLISH TO INFRASTRUCTUR
                 .Then(new OffsetMarketDataHandler()); // Thread 5: UPDATE OFFSET LOOKUP STORE
 
             _fastFeedAnalysisPipe.Start();
 
-            _fastFeed = new FastFeedManager(_fastFeedAnalysisPipe, MDStore);
+            _fastFeed = new FastFeedManager(_fastFeedAnalysisPipe, MDStore, _lowLatencyMDPath);
 
             
             _fastFeed.Start();
@@ -112,10 +124,16 @@ namespace HFTbridge.Node.Agent
                 return;
             };
 
-            // adapter.OnNewTCTick += logTick =>{
-            //     Console.WriteLine(logTick.Symbolkey + "|" + logTick.SymbolRouting + "|" + logTick.AvgPrice);
-            //     return;
-            // };
+            adapter.OnTickValue += logTick =>{
+                // Console.WriteLine(logTick.Symbolkey + "|" + logTick.SymbolRouting + "|" + logTick.AvgPrice);
+
+                // return;
+                using (var scope = _lowLatencyMDPath.PublishEvent())
+                {
+                    var data = scope.Event();
+                    data.Publish(logTick.FeedID, logTick.SymbolRouting, logTick.SymbolKey, logTick.Ask, logTick.Bid);
+                }
+            };
 
             // CONNECT
             adapter.Connect();
