@@ -26,8 +26,8 @@ namespace HFTbridge.Agent.Services
             _lowLatencyMDPath = lowLatencyMDPath;
             _symbolInfoCache = new ConcurrentDictionary<string, SymbolInfo>();
             AddSymbols();
-          //  _feed = new SimpleProtoClient("207.167.96.187", 9009);
-           _feed = new SimpleProtoClient("207.167.96.187", 9011);
+            _feed = new SimpleProtoClient("207.167.96.187", 9009);
+          // _feed = new SimpleProtoClient("207.167.96.187", 9011);
           // _feed = new SimpleProtoClient("207.167.96.187", 9010);
             _feed.ReceivedNotify_NewMdNotify += HandleNewTick;
             _tradingAccount = "INTERNAL.SPOT";
@@ -43,46 +43,10 @@ namespace HFTbridge.Agent.Services
             // AddSymbol("XAUUSD", 2);
             // AddSymbol("EURUSD", 5);
 // --------
-            // AddSymbol("XBR/USD", 2);
-            // AddSymbol("XTI/USD", 2); 
-            // AddSymbol("XAG/USD", 2);
-            // AddSymbol("XAU/USD", 2);
-
-            // AddSymbol("J225", 2);
-            // AddSymbol("GDAXI", 2);
-            // AddSymbol("NDX", 2);
-            // AddSymbol("SPX", 2);
-            // AddSymbol("WS30", 1);
-
-            // AddSymbol("CAD/JPY", 3);
-            // AddSymbol("USD/JPY", 3);
-            // AddSymbol("GBP/JPY", 3);
-            // AddSymbol("AUD/JPY", 3);
-            // AddSymbol("CHF/JPY", 3);
-            // AddSymbol("EUR/JPY", 3);
-
-            // AddSymbol("AUD/NZD", 5);
-            // AddSymbol("NZD/USD", 5);
-            // AddSymbol("USD/CHF", 5);
-            // AddSymbol("USD/CAD", 5);
-            // AddSymbol("GBP/USD", 5);
-            // AddSymbol("GBP/CHF", 5);
-            // AddSymbol("GBP/CAD", 5);
-            // AddSymbol("EUR/USD", 5);
-            // AddSymbol("EUR/GBP", 5);
-            // AddSymbol("EUR/CHF", 5);
-            // AddSymbol("EUR/CAD", 5);
-            // AddSymbol("EUR/AUD", 5);
-            // AddSymbol("AUD/USD", 5);
-
-
-
-
-            //-----
-             AddSymbol("XBRUSD", 2);
-            AddSymbol("XTIUSD", 2);
-            AddSymbol("XAGUSD", 2);
-            AddSymbol("XAUUSD", 2);
+            AddSymbol("XBR/USD", 2);
+            AddSymbol("XTI/USD", 2); 
+            AddSymbol("XAG/USD", 2);
+            AddSymbol("XAU/USD", 2);
 
             AddSymbol("J225", 2);
             AddSymbol("GDAXI", 2);
@@ -90,26 +54,62 @@ namespace HFTbridge.Agent.Services
             AddSymbol("SPX", 2);
             AddSymbol("WS30", 1);
 
-            AddSymbol("CADJPY", 3);
-            AddSymbol("USDJPY", 3);
-            AddSymbol("GBPJPY", 3);
-            AddSymbol("AUDJPY", 3);
-            AddSymbol("CHFJPY", 3);
-            AddSymbol("EURJPY", 3);
+            AddSymbol("CAD/JPY", 3);
+            AddSymbol("USD/JPY", 3);
+            AddSymbol("GBP/JPY", 3);
+            AddSymbol("AUD/JPY", 3);
+            AddSymbol("CHF/JPY", 3);
+            AddSymbol("EUR/JPY", 3);
 
-            AddSymbol("AUDNZD", 5);
-            AddSymbol("NZDUSD", 5);
-            AddSymbol("USDCHF", 5);
-            AddSymbol("USDCAD", 5);
-            AddSymbol("GBPUSD", 5);
-            AddSymbol("GBPCHF", 5);
-            AddSymbol("GBPCAD", 5);
-            AddSymbol("EURUSD", 5);
-            AddSymbol("EURGBP", 5);
-            AddSymbol("EURCHF", 5);
-            AddSymbol("EURCAD", 5);
-            AddSymbol("EURAUD", 5);
-            AddSymbol("AUDUSD", 5);
+            AddSymbol("AUD/NZD", 5);
+            AddSymbol("NZD/USD", 5);
+            AddSymbol("USD/CHF", 5);
+            AddSymbol("USD/CAD", 5);
+            AddSymbol("GBP/USD", 5);
+            AddSymbol("GBP/CHF", 5);
+            AddSymbol("GBP/CAD", 5);
+            AddSymbol("EUR/USD", 5);
+            AddSymbol("EUR/GBP", 5);
+            AddSymbol("EUR/CHF", 5);
+            AddSymbol("EUR/CAD", 5);
+            AddSymbol("EUR/AUD", 5);
+            AddSymbol("AUD/USD", 5);
+
+
+
+
+            //-----
+            //  AddSymbol("XBRUSD", 2);
+            // AddSymbol("XTIUSD", 2);
+            // AddSymbol("XAGUSD", 2);
+            // AddSymbol("XAUUSD", 2);
+
+            // AddSymbol("J225", 2);
+            // AddSymbol("GDAXI", 2);
+            // AddSymbol("NDX", 2);
+            // AddSymbol("SPX", 2);
+            // AddSymbol("WS30", 1);
+
+            // AddSymbol("CADJPY", 3);
+            // AddSymbol("USDJPY", 3);
+            // AddSymbol("GBPJPY", 3);
+            // AddSymbol("AUDJPY", 3);
+            // AddSymbol("CHFJPY", 3);
+            // AddSymbol("EURJPY", 3);
+
+            // AddSymbol("AUDNZD", 5);
+            // AddSymbol("NZDUSD", 5);
+            // AddSymbol("USDCHF", 5);
+            // AddSymbol("USDCAD", 5);
+            // AddSymbol("GBPUSD", 5);
+            // AddSymbol("GBPCHF", 5);
+            // AddSymbol("GBPCAD", 5);
+            // AddSymbol("EURUSD", 5);
+            // AddSymbol("EURGBP", 5);
+            // AddSymbol("EURCHF", 5);
+            // AddSymbol("EURCAD", 5);
+            // AddSymbol("EURAUD", 5);
+            // AddSymbol("AUDUSD", 5);
         }
 
         private void AddSymbol(string symbolKey, int digits)

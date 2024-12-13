@@ -7,9 +7,9 @@ namespace HFTbridge.Node.Agent
 {
     class Program
     {
-        public static string NodeId = "Manoj-Agent-LMAX-AVG";
+        public static string NodeId = "Manoj-Agent";
     //    public static string NodeId = "Mike-Agent";
-    //   public static string NodeId = "Team-Agent-LMAX";
+    //   public static string NodeId = "Team-Agent-BJF-2";
         // public static string NodeId = "DEV-LD4";
         static async Task Main(string[] args)
         {
