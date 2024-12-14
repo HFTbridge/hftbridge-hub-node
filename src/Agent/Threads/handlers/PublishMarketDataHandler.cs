@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Agent;
 
 
 namespace HFTbridge.Agent
@@ -17,10 +18,12 @@ namespace HFTbridge.Agent
         private readonly List<SubMsgMDRouting> _buffer = new List<SubMsgMDRouting>();
         private readonly object _lock = new object();
         private readonly Timer _timer;
+        private readonly string _nodeId;
 
         public PublishMarketDataHandler(HFTBridgeEngine engine)
         {
             _engine = engine;
+            _nodeId = AgentConfig.NodeId;
             // Timer that triggers every second
             _timer = new Timer(OnTimerElapsed, null, 1000, 1000); // 1000 ms = 1 second
         }
@@ -65,7 +68,7 @@ namespace HFTbridge.Agent
             {
                 Ts = DateTime.UtcNow.Ticks,
                 Ticks = _buffer.ToArray(),
-                NodeId = Program.NodeId
+                NodeId = _nodeId
             };
 
             //Console.WriteLine(Program.NodeId);

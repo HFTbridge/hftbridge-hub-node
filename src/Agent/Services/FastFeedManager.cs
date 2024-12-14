@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using Agent;
 using ProtoClient;
 using com.chronoxor.simple;
 using Disruptor;
@@ -26,7 +27,7 @@ namespace HFTbridge.Agent.Services
             _lowLatencyMDPath = lowLatencyMDPath;
             _symbolInfoCache = new ConcurrentDictionary<string, SymbolInfo>();
             AddSymbols();
-            _feed = new SimpleProtoClient("207.167.96.187", 9009);
+            _feed = new SimpleProtoClient(AgentConfig.FastFeedHost, AgentConfig.FastFeedPort);
           // _feed = new SimpleProtoClient("207.167.96.187", 9011);
           // _feed = new SimpleProtoClient("207.167.96.187", 9010);
             _feed.ReceivedNotify_NewMdNotify += HandleNewTick;

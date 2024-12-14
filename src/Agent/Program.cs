@@ -1,39 +1,29 @@
-﻿using HFTbridge.Node.Shared.Services;
-using HFTbridge.Msg;
-using HFTbridge.TCLIB;
+﻿using Agent;
+using HFTbridge.Node.Shared.Services;
 using HFTbridge.Agent.Services;
 
 namespace HFTbridge.Node.Agent
 {
     class Program
     {
-        public static string NodeId = "Manoj-Agent";
-    //    public static string NodeId = "Mike-Agent";
-    //   public static string NodeId = "Team-Agent-BJF-2";
-        // public static string NodeId = "DEV-LD4";
         static async Task Main(string[] args)
         {
-            var organizationId = "PUBLIC";
-            // var nodeId = "DEV-LD4-1";
-            var nodeId = NodeId;
-
+            AgentConfig.LoadConfiguration();
             var hardware = new HardwareMetricsManager();
             var geo = new GeoLocationManager();
-            
-
             var engine = new HFTBridgeEngine();
             
-            var mothershipService = new MothershipService("https://hub.agent.hft-app.net", nodeId, organizationId, new SyncWorkerHandler(organizationId, nodeId, engine));
+            var mothershipService = new MothershipService("https://hub.agent.hft-app.net", AgentConfig.NodeId, AgentConfig.OrganizationId, new SyncWorkerHandler(AgentConfig.OrganizationId, AgentConfig.NodeId, engine));
 
-            var handler = new MsgHandler(mothershipService._eventGateway, engine, nodeId, organizationId);
+            var handler = new MsgHandler(mothershipService._eventGateway, engine, AgentConfig.NodeId, AgentConfig.OrganizationId);
             mothershipService.Start();
 
             // Snapshot Manager
             var snapshotTC = new SnapshotManagerTradingConnections(
                 engine,
                 mothershipService._eventGateway,
-                organizationId,
-                nodeId,
+                AgentConfig.OrganizationId,
+                AgentConfig.NodeId,
                 hardware,
                 geo
             );
@@ -41,8 +31,8 @@ namespace HFTbridge.Node.Agent
             var snapshotAgent= new SnapshotManagerAgentStatus(
                 engine,
                 mothershipService._eventGateway,
-                organizationId,
-                nodeId,
+                AgentConfig.OrganizationId,
+                AgentConfig.NodeId,
                 hardware,
                 geo
             );
@@ -50,8 +40,8 @@ namespace HFTbridge.Node.Agent
             var snapshotTrades = new SnapshotManagerLiveTrades(
                 engine,
                 mothershipService._eventGateway,
-                organizationId,
-                nodeId,
+                AgentConfig.OrganizationId,
+                AgentConfig.NodeId,
                 hardware,
                 geo
             );
@@ -59,8 +49,8 @@ namespace HFTbridge.Node.Agent
             var snapshotAgentMetrics = new SnapshotManagerAgentMetrics(
                 engine,
                 mothershipService._eventGateway,
-                organizationId,
-                nodeId,
+                AgentConfig.OrganizationId,
+                AgentConfig.NodeId,
                 hardware,
                 geo
             );
@@ -68,8 +58,8 @@ namespace HFTbridge.Node.Agent
             var snapshotMD = new SnapshotManagerMarketData(
                 engine,
                 mothershipService._eventGateway,
-                organizationId,
-                nodeId,
+                AgentConfig.OrganizationId,
+                AgentConfig.NodeId,
                 hardware,
                 geo
             );

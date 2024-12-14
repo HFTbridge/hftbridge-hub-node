@@ -27,12 +27,13 @@
         <PackageReference Include="Hardware.Info" Version="100.0.1.1" />
   </ItemGroup>
 
-  <!-- <ItemGroup>
+   <ItemGroup>
     <EmbeddedResource Include="HFTbridgeAgentConfig.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
   </ItemGroup>
-   -->
+  
+  
   <ItemGroup>
     <!-- <ProjectReference Include="..\HFTbridge.Engine\HFTbridge.Engine.csproj" /> -->
     <ProjectReference Include="..\..\shared\HFTbridge.Node.Shared\HFTbridge.Node.Shared.csproj" />
