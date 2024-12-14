@@ -81,8 +81,14 @@ namespace Agent.Models
                 BidOffset: sq.OffsetBid, 
                 AskAfterOffset: sq.AskAfterOffset, 
                 BidAfterOffset: sq.BidAfterOffset,
-                BuyGap: sq.BuyGapMinusSpread,
-                SellGap: sq.SellGapMinusSpread,
+                BuyGapSimpleAdjustSpread: sq.BuyGapSimple,
+                SellGapSimpleAdjustSpread: sq.SellGapSimple,
+                BuyGapAverage: sq.BuyGapAverage,
+                SellGapAverage: sq.SellGapAverage,
+                BuyGapSpreadCorrect : sq.BuyGapMinusSpread,
+                SellGapSpreadCorrect: sq.SellGapMinusSpread,
+                BuyGapSpreadCorrectAdjustSpread: sq.BuyGapMinusSpread,
+                SellGapSpreadCorrectAdjustSpread: sq.SellGapMinusSpread,
                 IsBuyGap: sq.BuyGapMinusSpread > 0, // Set to true if BuyGap > 0
                 IsSellGap: sq.SellGapMinusSpread > 0, // Set to true if SellGap > 0
                 //  IsBuyGap: sq.IsBuyGap, // Set to true if BuyGap > 0
@@ -108,7 +114,8 @@ namespace Agent.Models
                 AveragePrice: this.MainAverage,
                 Spread:  this.MainSpread,
                 TickCounter: this.RoutingUpdateCounter,
-                TradingConnectionQuotes: GetSlowFeeds()
+                TradingConnectionQuotes: GetSlowFeeds(),
+                IsAnalysisRunning: true
                 //TradingConnectionQuotes: ConvertToMDRoutingItems(TradinConnectionsQuotes, this.Ask, this.Bid)
             );
             // foreach (var item in msg.TradingConnectionQuotes)

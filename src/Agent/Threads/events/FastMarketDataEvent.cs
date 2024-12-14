@@ -63,7 +63,8 @@ namespace HFTbridge.Agent
                 AveragePrice: Math.Round((this.Ask + this.Bid) / 2,this.Digits),
                 Spread:  Math.Round((this.Ask - this.Bid) * Math.Pow(10,this.Digits),0),
                 TickCounter: this.TickCounter,
-                TradingConnectionQuotes: ConvertToMDRoutingItems(TradinConnectionsQuotes, this.Ask, this.Bid)
+                TradingConnectionQuotes: ConvertToMDRoutingItems(TradinConnectionsQuotes, this.Ask, this.Bid),
+                IsAnalysisRunning: true
             );
             // foreach (var item in msg.TradingConnectionQuotes)
             // {
@@ -74,27 +75,39 @@ namespace HFTbridge.Agent
 
     public static SubMsgMDRoutingItem[] ConvertToMDRoutingItems(List<TCSymbolQuote> symbolQuotes, double fastAsk, double fastBid)
     {
-        return symbolQuotes.Select(sq => new SubMsgMDRoutingItem(
-            Ts: sq.Ts,
-            OrganizationId: sq.OrganizationId,
-            TradingAccountId: sq.TradingAccountId,
-            SymbolKey: sq.Symbolkey,
-            SymbolRouting: sq.SymbolRouting,
-            Digits: (int)sq.Digits,
-            Ask: sq.Ask,
-            Bid: sq.Bid,
-            AveragePrice: sq.AvgPrice,
-            Spread: sq.Spread,
-            AskOffset: 0, 
-            BidOffset: 0, 
-            AskAfterOffset: sq.Ask, 
-            BidAfterOffset: sq.Bid,
-            BuyGap: Math.Round((fastBid - sq.Ask)* Math.Pow(10,sq.Digits),0),
-            SellGap: Math.Round((sq.Bid - fastAsk)* Math.Pow(10,sq.Digits),0),
-            IsBuyGap: (fastBid - sq.Ask) > 0, // Set to true if BuyGap > 0
-            IsSellGap: (sq.Bid - fastAsk) > 0, // Set to true if SellGap > 0
-            TickCounter: sq.TickNumber
-        )).ToArray();
+        return symbolQuotes.Select(sq => 
+        {
+                double sqAvg = Math.Round((sq.Ask + sq.Bid) / 2, sq.Digits);  // Pre-calculate sq.Avg (rounded)
+                double fastAvg = (fastAsk + fastBid) / 2;  // Pre-calculate fastAvg
+
+                return new SubMsgMDRoutingItem(
+                Ts: sq.Ts,
+                OrganizationId: sq.OrganizationId,
+                TradingAccountId: sq.TradingAccountId,
+                SymbolKey: sq.Symbolkey,
+                SymbolRouting: sq.SymbolRouting,
+                Digits: sq.Digits,
+                Ask: sq.Ask,
+                Bid: sq.Bid,
+                AveragePrice: sq.AvgPrice,
+                Spread: sq.Spread,
+                AskOffset: 0,
+                BidOffset: 0,
+                AskAfterOffset: sq.Ask,
+                BidAfterOffset: sq.Bid,
+                BuyGapSimpleAdjustSpread: (fastAsk - sq.Ask) * Math.Pow(10, sq.Digits) - sq.Spread,
+                SellGapSimpleAdjustSpread: (fastBid - sq.Bid) * Math.Pow(10, sq.Digits) - sq.Spread,
+                BuyGapAverage: Math.Round(fastAvg - sqAvg * Math.Pow(10, sq.Digits), 0),
+                SellGapAverage: Math.Round(sqAvg - fastAvg * Math.Pow(10, sq.Digits), 0),
+                BuyGapSpreadCorrect : Math.Round((fastBid - sq.Ask)* Math.Pow(10, sq.Digits), 0) - sq.Spread,
+                SellGapSpreadCorrect: Math.Round((sq.Bid - fastAsk)* Math.Pow(10, sq.Digits), 0) - sq.Spread,
+                BuyGapSpreadCorrectAdjustSpread: Math.Round((fastBid - sq.Ask)* Math.Pow(10,sq.Digits),0),
+                SellGapSpreadCorrectAdjustSpread: Math.Round((sq.Bid - fastAsk)* Math.Pow(10,sq.Digits),0),
+                IsBuyGap: (fastBid - sq.Ask) > 0, // Set to true if BuyGap > 0
+                IsSellGap: (sq.Bid - fastAsk) > 0, // Set to true if SellGap > 0
+                TickCounter: sq.TickNumber
+            );
+        }).ToArray();
     }
 
     }

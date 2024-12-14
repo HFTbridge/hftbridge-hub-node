@@ -12,6 +12,12 @@ namespace HFTbridge.Agent.Services
         private readonly GeoLocationManager _geo;
         private readonly string _organizationId;
         private readonly string _nodeId;
+        private readonly string _nodeVersion = Assembly.GetExecutingAssembly().GetName().Version?.ToString();
+        private readonly int _schemaVersion = MsgSchema.Version;
+        private readonly string _tcLibVersion = AppDomain.CurrentDomain.GetAssemblies()
+            .FirstOrDefault(a => a.GetName().Name == "HFTbridge.TCLIB")?.GetName().Version?.ToString();
+        private readonly string _tcSharedVersion = AppDomain.CurrentDomain.GetAssemblies()
+            .FirstOrDefault(a => a.GetName().Name == "HFTbridge.TC.Shared")?.GetName().Version?.ToString();
 
         public SnapshotManagerAgentStatus(
             HFTBridgeEngine engine, 
@@ -28,6 +34,7 @@ namespace HFTbridge.Agent.Services
             _nodeId = nodeId;
             _hardware = hardware;
             _geo = geo;
+            
         }
 
         public MsgSnapshotSingleAgentStatus GetSnapshot()
@@ -58,7 +65,14 @@ namespace HFTbridge.Agent.Services
                 Isp: "N/A",
                 OrgServer: geoData.org,
                 QueryDNS: "N/A",
-                OriginIp: geoData.ip
+                OriginIp: geoData.ip,
+                NodeVersion: _nodeVersion,
+                MsgSchemaVersion: _schemaVersion,
+                TcLibVersion: _tcLibVersion,
+                TcSharedVersion: _tcSharedVersion
+                
+                
+                
             );
 
             return snapshot;
