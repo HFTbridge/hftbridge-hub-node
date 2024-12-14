@@ -75,6 +75,9 @@ namespace HFTbridge.Agent.Services
             AddSymbol("EUR/CAD", 5);
             AddSymbol("EUR/AUD", 5);
             AddSymbol("AUD/USD", 5);
+            
+            AddSymbol("XBT/USD", 2);
+            AddSymbol("XET/USD",2);
 
 
 

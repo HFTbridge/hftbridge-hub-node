@@ -9,7 +9,7 @@ namespace HFTbridge.Msg;
 
 public static class MsgSchema
 {
-    public static int Version = 33;
+    public static int Version = 36;
 
 //--------------------------------------------------------------------------------------------------------------------------------------------
 //------[ DECODE MESSAGE FROM RABBIT MQ LIBRARAY  ]
@@ -451,7 +451,6 @@ public record struct MsgMDRoutingBulk(
   [property: Key(0)] long Ts,
   [property: Key(1)] SubMsgMDRouting[] Ticks,
   [property: Key(2)] string NodeId
-
 );
 
 [MessagePackObject]
@@ -467,7 +466,8 @@ public record struct SubMsgMDRouting(
   [property: Key(8)] double AveragePrice,
   [property: Key(9)] double Spread,
   [property: Key(10)] long TickCounter,
-  [property: Key(11)] SubMsgMDRoutingItem[] TradingConnectionQuotes
+  [property: Key(11)] bool IsAnalysisRunning,
+  [property: Key(12)] SubMsgMDRoutingItem[] TradingConnectionQuotes
 );
 
 [MessagePackObject]
@@ -486,11 +486,17 @@ public record struct SubMsgMDRoutingItem(
   [property: Key(11)] double BidOffset,
   [property: Key(12)] double AskAfterOffset,
   [property: Key(13)] double BidAfterOffset,
-  [property: Key(14)] double BuyGap,
-  [property: Key(15)] double SellGap,
-  [property: Key(16)] bool IsBuyGap,
-  [property: Key(17)] bool IsSellGap,
-  [property: Key(18)] long TickCounter
+  [property: Key(14)] double BuyGapSimpleAdjustSpread,
+  [property: Key(15)] double SellGapSimpleAdjustSpread,
+  [property: Key(16)] double BuyGapAverage,
+  [property: Key(17)] double SellGapAverage,
+  [property: Key(18)] double BuyGapSpreadCorrect,
+  [property: Key(19)] double SellGapSpreadCorrect,
+  [property: Key(20)] double BuyGapSpreadCorrectAdjustSpread,
+  [property: Key(21)] double SellGapSpreadCorrectAdjustSpread,
+  [property: Key(22)] bool IsBuyGap,
+  [property: Key(23)] bool IsSellGap,
+  [property: Key(24)] long TickCounter
 );
   
   
@@ -652,7 +658,11 @@ public record struct MsgSnapshotSingleAgentStatus(
     [property: Key(16)] string Isp,
     [property: Key(17)] string OrgServer,
     [property: Key(18)] string QueryDNS,
-    [property: Key(19)] string OriginIp
+    [property: Key(19)] string OriginIp,
+    [property: Key(20)] string NodeVersion,
+    [property: Key(21)] int MsgSchemaVersion,
+    [property: Key(22)] string TcLibVersion,
+    [property: Key(23)] string TcSharedVersion 
 );
   
 [MessagePackObject]
@@ -678,7 +688,22 @@ public record struct SubMsgSnapshotSingleAgentTradingConnectionsItem(
     [property: Key(8)] int TpmAccount,
     [property: Key(9)] int OpenedTradesCount,
     [property: Key(10)] int ErrorCount,
-    [property: Key(11)] long ConnectedAtTs
+    [property: Key(11)] long ConnectedAtTs,
+    [property: Key(12)] string BrokerName,
+    [property: Key(13)] string Company,
+    [property: Key(14)] string IconUrl,
+    [property: Key(15)] string Host,
+    [property: Key(16)] int Port,
+    [property: Key(17)] string CountryCode,
+    [property: Key(18)] string Region,
+    [property: Key(19)] string RegionName,
+    [property: Key(20)] string Zip,
+    [property: Key(21)] double Lat,
+    [property: Key(22)] double Lng,
+    [property: Key(23)] string Timezone,
+    [property: Key(24)] string Isp,
+    [property: Key(25)] string Org,
+    [property: Key(26)] string Query
 );
     
 [MessagePackObject]
