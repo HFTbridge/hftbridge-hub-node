@@ -271,7 +271,7 @@ namespace Agent.Models
         {
             // Timestamp
             Timestamp = incomingTs;
-            CalculateOffsetValues(fastAsk,fastBid,Timestamp);
+           // CalculateOffsetValues(fastAsk,fastBid,Timestamp);
             CalculateGaps(fastAsk,fastBid);
         }
 

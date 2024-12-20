@@ -8,7 +8,7 @@
     <LangVersion>preview</LangVersion>
     <PublishSingleFile>true</PublishSingleFile>
     <SelfContained>true</SelfContained>
-    <Version>1.0.0.8</Version>
+    <Version>1.0.0.10</Version>
   </PropertyGroup>
 
 
@@ -45,8 +45,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="HFTbridge.TCLIB" Version="1.1.74"/>
-    <PackageReference Include="HFTbridge.TC.Shared" Version="1.0.27"/>
+    <PackageReference Include="HFTbridge.TCLIB" Version="1.1.78"/>
+    <PackageReference Include="HFTbridge.TC.Shared" Version="1.0.28"/>
        <!-- <PackageReference Include="HFTbridge.TCLIB" Version="1.1.18"/>
     <PackageReference Include="HFTbridge.TC.Shared" Version="1.0.6"/> -->
   </ItemGroup>

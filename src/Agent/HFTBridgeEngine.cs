@@ -103,6 +103,8 @@ namespace HFTbridge.Node.Agent
                 true
                 );
 
+                Console.WriteLine(msg.ToString());
+
          //   Console.WriteLine("TEST === " +  msg.TradingAccountId + "|" + organizationId);
             //var adapter = _tc.CreateTCAdapter(msg.TradingAccountProvider, msg.TradingAccountConnectionString, msg.BrokerId);
 
